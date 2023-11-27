@@ -4,22 +4,29 @@ import inwork.models as md
 
 @admin.register(md.Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone', 'telegram_id')
-    list_filter = ('name', 'phone', 'telegram_id')
-    readonly_fields = ('telegram_id',)
+    list_display = ('name', 'phone', 'tg_id')
+    list_filter = ('name', 'phone', 'tg_id')
+    readonly_fields = ('tg_id',)
 
 
 @admin.register(md.Master)
 class MasterAdmin(admin.ModelAdmin):
-    list_display = ('name', 'rate', 'telegram_id')
-    list_filter = ('name', 'rate', 'telegram_id')
-    readonly_fields = ('telegram_id',)
+    list_display = ('name', 'rate', 'tg_id')
+    list_filter = ('name', 'rate', 'tg_id')
+    readonly_fields = ('tg_id',)
+
+
+@admin.register(md.Categories)
+class CategoriesAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    list_filter = ('name',)
+    search_fields = ('name',)
 
 
 @admin.register(md.Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ('name', 'duration', 'price')
-    list_filter = ('name', 'duration', 'price')
+    list_filter = ('name', 'duration', 'masters', 'price')
 
 
 @admin.register(md.MasterSchedule)

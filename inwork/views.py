@@ -16,7 +16,7 @@ class SignUp(APIView):
     #     services = md.Service.objects.filter(category=category).first()
 
 
-    def get(self, request, telegram_id):
+    def get(self, request, tg_id):
         services = md.Service.objects.all()
         masters = md.Master.objects.all()
         services_data = []
