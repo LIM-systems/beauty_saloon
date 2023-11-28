@@ -1,0 +1,53 @@
+from django.db.models.functions import TruncDate
+from django.db.models import Min
+from asgiref.sync import sync_to_async
+from inwork import models as mdl
+
+
+@sync_to_async()
+def check_master(tg_id):
+    '''Проверка, сущетсвования мастера по tg_id'''
+    master = mdl.Master.objects.filter(name__tg_id=tg_id).first()
+    if master:
+        return True
+
+
+@sync_to_async()
+def get_master_work_on_date(tg_id, date):
+    '''Получение работ мастера на определенную дату'''
+    visits = mdl.VisitJournal.objects.annotate(
+        onlydate=TruncDate('date')).filter(
+            onlydate=date,
+            finish=False,
+            visit_master__name__tg_id=tg_id,
+                ).order_by('-date')
+    if not visits:
+        return False
+
+    return [
+        (
+            visit.id,
+            visit.date,
+            visit.visit_client.name,
+            visit.visit_service,
+            visit.visit_service.duration,
+            visit.visit_service.price,
+        )
+        for visit in visits]
+
+
+@sync_to_async()
+def get_dates_master_records(tg_id):
+    '''Получить даты с открытыми записями мастера'''
+    visits = mdl.VisitJournal.objects.annotate(
+        onlydate=TruncDate('date')).filter(
+        finish=False,
+        visit_master__name__tg_id=tg_id
+            ).values('onlydate').annotate(
+                min_date=Min('onlydate')).values_list(
+                    'min_date', flat=True)
+
+    if not visits:
+        return False
+
+    return [visit.strftime('%Y-%m-%d') for visit in visits]

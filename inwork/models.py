@@ -1,14 +1,18 @@
 from django.db import models
-from datetime import timedelta
-
-# Create your models here.
+from django.core.validators import RegexValidator
 
 
 class Client(models.Model):
     name = models.CharField(
-        max_length=255, verbose_name='Имя', help_text='Введите ФИО клиента')
-    phone = models.CharField(max_length=255, verbose_name='Телефон',
-                             help_text='Введите телефон в формате 79001112233')
+        max_length=255, verbose_name='Имя',
+        help_text='Введите ФИО клиента')
+    phone_regex = RegexValidator(
+        regex=r'^\+7\d{10}$',
+        message='Номер должен быть в формате +79001112233')
+    phone = models.CharField(
+        validators=[phone_regex],
+        max_length=12, verbose_name='Телефон',
+        default='+7', help_text='Введите телефон в формате +79001112233')
     tg_id = models.BigIntegerField(
         verbose_name='Телеграм ID', null=True, blank=True)
     description = models.TextField(
@@ -23,19 +27,21 @@ class Client(models.Model):
 
 
 class Master(models.Model):
-    name = models.CharField(max_length=255, verbose_name='ФИО')
+    name = models.ForeignKey(
+        to=Client, on_delete=models.CASCADE, verbose_name='ФИО')
     description = models.TextField(verbose_name='Описание')
     rate = models.FloatField(
         default=0, verbose_name='Оценка', null=True, blank=True)
-    tg_id = models.BigIntegerField(
-        verbose_name='Телеграм ID', null=True, blank=True)
+    photo = models.ImageField(
+        upload_to='masters/',
+        verbose_name='Фото мастера',)
 
     class Meta:
         verbose_name = 'Мастер'
         verbose_name_plural = 'Мастера'
 
     def __str__(self):
-        return self.name
+        return self.name.name
 
 
 class Categories(models.Model):
@@ -108,7 +114,7 @@ class VisitJournal(models.Model):
         Client, on_delete=models.CASCADE, verbose_name='Клиент')
     visit_master = models.ForeignKey(
         Master, on_delete=models.CASCADE, verbose_name='Мастер')
-    date = models.DateField(verbose_name='Дата посещения')
+    date = models.DateTimeField(verbose_name='Дата посещения')
     visit_service = models.ForeignKey(
         Service, on_delete=models.CASCADE, verbose_name='Услуга')
     finish = models.BooleanField(default=False, verbose_name='Услуга оказана')

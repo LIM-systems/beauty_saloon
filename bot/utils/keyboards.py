@@ -1,18 +1,32 @@
 from aiogram import types
-import loader as ld
+import bot.loader as ld
 import env
 
 
 def menu_keyboard(array: list, row_width=2):
     '''Обычные кнопки для меню
     Принимает список, возвращает кнопки'''
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True,
-                                       row_width=row_width)
+    markup = types.ReplyKeyboardMarkup(
+        resize_keyboard=True,
+        row_width=row_width)
     markup.add(*array)
     return markup
 
 
-def show_user_main_menu(tg_id, row_width=3):
+def send_phone(one_time=True):
+    '''Передать телефон'''
+    markup = types.ReplyKeyboardMarkup(
+        one_time_keyboard=one_time,
+        input_field_placeholder='Нажмите на кнопку ниже',
+        resize_keyboard=True)
+    btn_phone = types.KeyboardButton(
+        text='☎️ Передать номер телефона',
+        request_contact=True)
+    markup.row(btn_phone,)
+    return markup
+
+
+def show_user_main_menu(tg_id, row_width=2):
     '''Сообщение с клавиатурой для зерегистрированных по команде /start'''
     markup = types.ReplyKeyboardMarkup(
         resize_keyboard=True,
@@ -22,8 +36,10 @@ def show_user_main_menu(tg_id, row_width=3):
         text=ld.main_menu_buttons[1],
         web_app=types.web_app_info.WebAppInfo(
             url=env.BASE_URL + f'sign_in/{tg_id}/'))
-    my_entries_button, about_us_button = types.KeyboardButton(
-        ld.main_menu_buttons[2:])
+    my_entries_button = types.KeyboardButton(
+        ld.main_menu_buttons[2])
+    about_us_button = types.KeyboardButton(
+        ld.main_menu_buttons[3])
     markup.add(my_entries_button, sign_up_button,
                about_us_button, profile_button)
     return markup

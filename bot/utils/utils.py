@@ -1,12 +1,16 @@
-from aiogram import types
+from re import sub
 
 
-# получение имени из телеграма
-async def get_telegram_name(user):
-    if not user.first_name:
-        name = user.last_name
-    elif not user.last_name:
-        name = user.first_name
+def clean_phone(phone):
+    '''Очистка номера от лишних символов
+    и приведение номеров к общему синтаксису +7'''
+    clear = sub('\D', '', phone)
+    if clear.startswith('7') and len(clear) == 11:
+        clear = f'+{clear}'
+    elif clear.startswith('9') and len(clear) == 10:
+        clear = f'+7{clear}'
+    elif clear.startswith('8') and len(clear) == 11:
+        clear = f'+7{clear[1:]}'
     else:
-        name = user.first_name + " " + user.last_name
-    return name
+        return False
+    return clear

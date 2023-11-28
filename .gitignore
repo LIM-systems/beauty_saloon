@@ -129,4 +129,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-core/settings.py
+
+media/
+static/

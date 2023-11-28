@@ -5,7 +5,6 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 import inwork.models as md
 
-# Create your views here.
 
 class SignUp(APIView):
     permission_classes = [AllowAny]
@@ -14,7 +13,6 @@ class SignUp(APIView):
     #     category_id = request.data.get('category_id')
     #     category = md.Category.objects.get(id=category_id)
     #     services = md.Service.objects.filter(category=category).first()
-
 
     def get(self, request, tg_id):
         services = md.Service.objects.all()
@@ -39,4 +37,6 @@ class SignUp(APIView):
                 'description': master.description,
                 'services': services_ids
             })
-        return Response({'services': services_data, 'masters': masters_data}, status=status.HTTP_200_OK)
+        return Response(
+            {'services': services_data, 'masters': masters_data},
+            status=status.HTTP_200_OK)

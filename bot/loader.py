@@ -12,5 +12,6 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 
-main_menu_buttons = ['📄 Профиль', '🖋 Записаться', '📂 Мои записи', '💬 О нас']
+main_menu_buttons = ['◾ Профиль', '🟢 Записаться', '️✔️ Мои записи', '🟠 О нас']
 reg_button = ('🚪 Регистрация',)
+master_menu_buttons = ('🟠 Записи на сегодня', '🟡 Записи на завтра', '📅 Календарь')

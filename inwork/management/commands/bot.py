@@ -13,9 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from aiogram import executor
         import bot.handlers
-        from bot.loader import dp
-        # from bot.utils import main_menu_buttons, main_menu_buttons_handle
-    
+        from bot.loader import dp    
         # class ClientMenuMiddleware(BaseMiddleware):
         #     async def on_pre_process_message(self, msg: types.Message, data: dict):
         #         if msg.text in main_menu_buttons:
