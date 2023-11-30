@@ -1,6 +1,7 @@
-from django.db.models.functions import TruncDate
-from django.db.models import Min
 from asgiref.sync import sync_to_async
+from django.db.models import Min
+from django.db.models.functions import TruncDate
+
 from inwork import models as mdl
 
 
@@ -50,4 +51,4 @@ def get_dates_master_records(tg_id):
     if not visits:
         return False
 
-    return [visit.strftime('%Y-%m-%d') for visit in visits]
+    return [visit.strftime('%d-%m-%Y') for visit in visits]

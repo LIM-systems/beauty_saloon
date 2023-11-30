@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+
 import inwork.models as md
 
 
@@ -48,16 +49,16 @@ class MasterScheduleAdmin(admin.ModelAdmin):
     list_filter = ('master', 'date', 'start_time', 'end_time')
 
 
-@admin.register(md.MasterScheduleTime)
-class MasterScheduleTimeAdmin(admin.ModelAdmin):
-    list_display = ('master_schedule', 'time', 'is_free')
-    list_filter = ('master_schedule', 'time', 'is_free')
+# @admin.register(md.MasterScheduleTime)
+# class MasterScheduleTimeAdmin(admin.ModelAdmin):
+#     list_display = ('master_schedule', 'time', 'is_free')
+#     list_filter = ('master_schedule', 'time', 'is_free')
 
 
 @admin.register(md.VisitJournal)
 class VisitJournalTimeAdmin(admin.ModelAdmin):
     list_display = ('visit_client', 'visit_master', 'date',
-                    'visit_service', 'estimation', 'finish')
+                    'visit_service', 'estimation', 'finish', 'cancel')
     list_filter = ('visit_client', 'visit_master', 'date',
-                   'visit_service', 'estimation', 'finish')
-    readonly_fields = ('estimation', 'finish')
+                   'visit_service', 'estimation', 'finish', 'cancel')
+    readonly_fields = ('estimation',)

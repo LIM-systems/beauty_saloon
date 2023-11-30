@@ -1,1 +1,1 @@
-from bot.handlers import start, master
+from bot.handlers import client, master, start

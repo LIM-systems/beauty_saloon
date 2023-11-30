@@ -1,6 +1,10 @@
+from os import makedirs, path
 from pathlib import Path
-from os import path
+
 import env
+
+if not path.exists('logs'):
+    makedirs('logs')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

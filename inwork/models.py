@@ -1,5 +1,5 @@
-from django.db import models
 from django.core.validators import RegexValidator
+from django.db import models
 
 
 class Client(models.Model):
@@ -94,18 +94,18 @@ class MasterSchedule(models.Model):
         return self.date
 
 
-class MasterScheduleTime(models.Model):
-    master_schedule = models.ForeignKey(
-        MasterSchedule, on_delete=models.CASCADE, verbose_name='Рабочий день')
-    time = models.TimeField(verbose_name='Время')
-    is_free = models.BooleanField(default=True, verbose_name='Свободно')
+# class MasterScheduleTime(models.Model):
+#     master_schedule = models.ForeignKey(
+#         MasterSchedule, on_delete=models.CASCADE, verbose_name='Рабочий день')
+#     time = models.TimeField(verbose_name='Время')
+#     is_free = models.BooleanField(default=True, verbose_name='Свободно')
 
-    class Meta:
-        verbose_name = 'Время'
-        verbose_name_plural = 'Время'
+#     class Meta:
+#         verbose_name = 'Время'
+#         verbose_name_plural = 'Время'
 
-    def __str__(self):
-        return self.time
+#     def __str__(self):
+#         return self.time
 
 
 class VisitJournal(models.Model):
@@ -117,6 +117,7 @@ class VisitJournal(models.Model):
     date = models.DateTimeField(verbose_name='Дата посещения')
     visit_service = models.ForeignKey(
         Service, on_delete=models.CASCADE, verbose_name='Услуга')
+    cancel = models.BooleanField(default=False, verbose_name='Услуга отменена')
     finish = models.BooleanField(default=False, verbose_name='Услуга оказана')
     estimation = models.IntegerField(
         verbose_name='Оценка', null=True, blank=True)
