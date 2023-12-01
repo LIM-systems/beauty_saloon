@@ -27,6 +27,7 @@ async def start(msg: types.Message):
     if newbie:
         await msg.answer(
             texts.welcome,
+            disable_web_page_preview=True,
             reply_markup=kb.inline_btns(ld.reg_button, 'reg_btn'))
         return
     # если клиент существует
@@ -60,7 +61,6 @@ async def select_telegram_name(call: types.CallbackQuery, state=FSMContext):
     # записываем телеграмное имя пользователя и просим номер телефона
     if 'get_name_tg' in call.data:
         await state.update_data({'name': name})
-        # await sqlc.update_client(call.from_user.id, {'name': name})
         await call.message.answer(
             texts.get_phone_text, reply_markup=kb.send_phone())
         await ClientData.phone.set()
@@ -73,7 +73,6 @@ async def select_telegram_name(call: types.CallbackQuery, state=FSMContext):
 async def select_own_name(msg: types.Message, state: FSMContext):
     '''запись в бд имени, введённого вручную и просим указать номер телефона'''
     await state.update_data({'name': msg.text})
-    # await sqlc.update_client(msg.from_user.id, {'name': msg.text})
     await msg.answer(texts.get_phone_text, reply_markup=kb.send_phone())
     await ClientData.phone.set()
 
@@ -91,7 +90,7 @@ async def set_phone(msg: types.Message, state: FSMContext):
         await msg.answer('Напишите номер телефона в правильном формате. Например 89001112233')
         return
     data = await state.get_data()
-    upd = await sqlc.update_client(
+    upd = await sqlc.create_or_update_client(
         msg.from_user.id,
         {'phone': clear_phone, 'name': data.get('name')})
     await msg.answer(

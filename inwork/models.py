@@ -15,8 +15,12 @@ class Client(models.Model):
         default='+7', help_text='Введите телефон в формате +79001112233')
     tg_id = models.BigIntegerField(
         verbose_name='Телеграм ID', null=True, blank=True)
+    last_visit = models.DateTimeField(
+        verbose_name='Последнее посещение', blank=True, null=True)
     description = models.TextField(
         verbose_name='Комментарий', null=True, blank=True)
+    is_blocked = models.BooleanField(
+        verbose_name='Бот заблокирован', null=True, blank=True)
 
     class Meta:
         verbose_name = 'Клиент'

@@ -6,8 +6,8 @@ import inwork.models as md
 
 @admin.register(md.Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone', 'tg_id',)
-    list_filter = ('name', 'phone', 'tg_id')
+    list_display = ('name', 'phone', 'tg_id', 'last_visit', 'is_blocked', 'description')
+    list_filter = ('name', 'phone', 'tg_id',  'last_visit', 'is_blocked')
     # readonly_fields = ('tg_id',)
 
 

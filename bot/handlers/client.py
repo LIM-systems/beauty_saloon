@@ -116,3 +116,13 @@ async def confirm_cancel_record(call: types.CallbackQuery):
         await call.message.edit_text('Запись отменена')
     else:
         await call.message.delete()
+
+
+@dp.callback_query_handler(Text(startswith='estimation/'))
+async def estimation(call: types.CallbackQuery):
+    '''Оценка услуги'''
+    # call.data = visit/record_id/estimate_btn
+    record_id = call.data.split('/')[1]
+    estimate = call.data.split(' ')[-1]
+    await sqlcom.update_visit_journal(record_id, {'estimation': estimate})
+    await call.message.edit_text('Благодарим за оценку! ❤️')

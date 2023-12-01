@@ -15,7 +15,7 @@ def check_for_newbie(tg_id, name):
 
 
 @sync_to_async()
-def update_client(tg_id, params):
+def create_or_update_client(tg_id, params):
     '''Обновлении информации о клиенте или создание клиента'''
     # если передан телефон, клиенту добавляем tg_id
     # это даст возможность зарегать клиента заведенного вручную по номеру телефона
@@ -23,10 +23,16 @@ def update_client(tg_id, params):
         check_user = mdl.Client.objects.filter(phone=params.get('phone'))
         if check_user:
             check_user.update(tg_id=tg_id, name=params.get('name'))
-        return 'update_phone'
+            return 'update_phone'
     mdl.Client.objects.update_or_create(
         tg_id=tg_id, defaults=params
     )
+
+
+@sync_to_async()
+def update_client(tg_id, params):
+    '''Обновлении информации о клиенте или создание клиента'''
+    mdl.Client.objects.filter(tg_id=tg_id).update(**params)
 
 
 @sync_to_async()
@@ -79,9 +85,3 @@ def get_client_record(record_id):
             visit.visit_service.price,
             visit.estimation,
         )
-
-
-@sync_to_async()
-def delete_client_record(record_id):
-    '''Удалить одну запись клиента по id'''
-    mdl.VisitJournal.objects.get(id=record_id).delete()

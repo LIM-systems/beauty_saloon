@@ -4,14 +4,18 @@ import pathlib
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
+from bot.utils.utils import ClientLastVisitMiddleware
+
 import env
-from bot import handlers
 
 path = pathlib.Path().absolute()
 bot = Bot(token=env.TOKEN, parse_mode='HTML')
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
+# регистрация middleware
+middleware = ClientLastVisitMiddleware()
+dp.middleware.setup(middleware)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -29,3 +33,4 @@ master_menu_buttons = ('🟠 Записи на сегодня',
 client_records = ('Будущие', 'Прошедшие',)
 cancel_record = ('❌ Отменить запись',)
 yes_no = ('✅ Да', '❌ Нет')
+estimation = ('⭐ 1', '⭐ 2', '⭐ 3', '⭐ 4', '⭐ 5')
