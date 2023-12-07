@@ -3,12 +3,13 @@ from django.db import models
 
 
 class Client(models.Model):
-    name = models.CharField(
-        max_length=255, verbose_name='Имя',
-        help_text='Введите ФИО клиента')
     phone_regex = RegexValidator(
         regex=r'^\+7\d{10}$',
         message='Номер должен быть в формате +79001112233')
+
+    name = models.CharField(
+        max_length=255, verbose_name='Имя',
+        help_text='Введите ФИО клиента')
     phone = models.CharField(
         validators=[phone_regex],
         max_length=12, verbose_name='Телефон',
@@ -34,6 +35,8 @@ class Master(models.Model):
     name = models.ForeignKey(
         to=Client, on_delete=models.CASCADE, verbose_name='ФИО')
     description = models.TextField(verbose_name='Описание')
+    services = models.ManyToManyField(
+        'Service', verbose_name='Услуги', blank=True)
     rate = models.FloatField(
         default=0, verbose_name='Оценка', null=True, blank=True)
     photo = models.ImageField(
@@ -61,8 +64,6 @@ class Categories(models.Model):
 
 class Service(models.Model):
     name = models.CharField(max_length=255, verbose_name='Название услуги')
-    masters = models.ManyToManyField(
-        Master, verbose_name='Мастера', blank=True)
     categories = models.ManyToManyField(
         Categories, verbose_name='Категории', blank=True)
     duration = models.IntegerField(
@@ -76,10 +77,6 @@ class Service(models.Model):
 
     def __str__(self):
         return self.name
-
-    # def save(self, *args, **kwargs):
-    #     self.duration = self.duration * 60
-    #     super().save(*args, **kwargs)
 
 
 class MasterSchedule(models.Model):
@@ -95,21 +92,7 @@ class MasterSchedule(models.Model):
         verbose_name_plural = 'Графики работы мастеров'
 
     def __str__(self):
-        return self.date
-
-
-# class MasterScheduleTime(models.Model):
-#     master_schedule = models.ForeignKey(
-#         MasterSchedule, on_delete=models.CASCADE, verbose_name='Рабочий день')
-#     time = models.TimeField(verbose_name='Время')
-#     is_free = models.BooleanField(default=True, verbose_name='Свободно')
-
-#     class Meta:
-#         verbose_name = 'Время'
-#         verbose_name_plural = 'Время'
-
-#     def __str__(self):
-#         return self.time
+        return f'{self.master} - {self.date}'
 
 
 class VisitJournal(models.Model):

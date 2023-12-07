@@ -8,7 +8,7 @@ import inwork.models as md
 class ClientAdmin(admin.ModelAdmin):
     list_display = ('name', 'phone', 'tg_id', 'last_visit', 'is_blocked', 'description')
     list_filter = ('name', 'phone', 'tg_id',  'last_visit', 'is_blocked')
-    # readonly_fields = ('tg_id',)
+    readonly_fields = ('last_visit', 'is_blocked')
 
 
 @admin.register(md.Master)
@@ -40,19 +40,13 @@ class CategoriesAdmin(admin.ModelAdmin):
 @admin.register(md.Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ('name', 'duration', 'price')
-    list_filter = ('name', 'duration', 'masters', 'price')
+    list_filter = ('name', 'duration', 'price')
 
 
 @admin.register(md.MasterSchedule)
 class MasterScheduleAdmin(admin.ModelAdmin):
     list_display = ('master', 'date', 'start_time', 'end_time')
     list_filter = ('master', 'date', 'start_time', 'end_time')
-
-
-# @admin.register(md.MasterScheduleTime)
-# class MasterScheduleTimeAdmin(admin.ModelAdmin):
-#     list_display = ('master_schedule', 'time', 'is_free')
-#     list_filter = ('master_schedule', 'time', 'is_free')
 
 
 @admin.register(md.VisitJournal)
@@ -62,3 +56,4 @@ class VisitJournalTimeAdmin(admin.ModelAdmin):
     list_filter = ('visit_client', 'visit_master', 'date',
                    'visit_service', 'estimation', 'finish', 'cancel')
     readonly_fields = ('estimation',)
+    ordering = ('-date',)

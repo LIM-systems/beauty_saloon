@@ -1,8 +1,11 @@
 from django.urls import path
 
-from inwork.views import *
+from inwork import views
 
 urlpatterns = [
-    path('sign_up/', SignUp.as_view()),
-    path('sign_up/<int:tg_id>/', SignUp.as_view()),
+    path('allcategories', views.APIAllCategories.as_view()),
+    path('select_services', views.APISelectServices.as_view()),
+    path('select_masters', views.APISelectMasters.as_view()),
+    path('get_master_schedule', views.APIGetMasterSchedule.as_view()),
+    path('create_records', views.APICreateRecords.as_view()),
 ]
