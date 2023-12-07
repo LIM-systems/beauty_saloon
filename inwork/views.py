@@ -70,7 +70,7 @@ class APIGetMasterSchedule(APIView):
 
 class APICreateRecords(APIView):
     permission_classes = [AllowAny]
-    @snoop()
+
     def post(self, request):
         '''Создать запись(и) в журнале'''
         client_tg_id: int = request.data.get('client_tg_id')
@@ -79,19 +79,23 @@ class APICreateRecords(APIView):
             timestamp: str = master.get('timestamp')
             services: list = master.get('services')
             service_start = dt.strptime(timestamp, '%Y-%m-%d %H:%M')
-            # создаем запись(и) для клиента в журнале
+            # переменная для продолжительности предыдущей услуги
             duration = 0
             for num, service_id in enumerate(services):
                 client = md.Client.objects.get(tg_id=client_tg_id)
                 master = md.Master.objects.get(id=master_id)
                 service = md.Service.objects.get(id=service_id)
+                # для первой записи родное время
+                # для остальных + продолжительность предыдущей услуги
                 if num > 0:
                     service_start += td(minutes=duration)
+                # создаем запись(и) для клиента в журнале
                 md.VisitJournal.objects.create(
                     visit_client=client,
                     visit_master=master,
                     visit_service=service,
                     date=service_start,
                 )
+                # обновляем переменную продолжительности для расчета следующей услуги
                 duration = service.duration
         return Response({'responce': True}, status=status.HTTP_200_OK)
