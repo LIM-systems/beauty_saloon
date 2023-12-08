@@ -2,6 +2,18 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 
+class Person(models.Model):
+    title = models.CharField(max_length=12)
+    name = models.CharField(max_length=12)
+
+    class Meta:
+        verbose_name = 'Персона'
+        verbose_name_plural = 'Персона'
+
+    def __str__(self):
+        return self.name
+
+
 class Client(models.Model):
     phone_regex = RegexValidator(
         regex=r'^\+7\d{10}$',
@@ -65,11 +77,14 @@ class Categories(models.Model):
 class Service(models.Model):
     name = models.CharField(max_length=255, verbose_name='Название услуги')
     categories = models.ManyToManyField(
-        Categories, verbose_name='Категории', blank=True)
+        Categories, verbose_name='Категории',)
     duration = models.IntegerField(
         verbose_name='Длительность выполнения (минут)')
-    description = models.TextField(verbose_name='Описание')
+    description = models.TextField(verbose_name='Описание', blank=True)
     price = models.IntegerField(verbose_name='Цена(рублей)')
+    persons = models.ManyToManyField(
+        to=Person, verbose_name='Персоны',
+        help_text='Выберите для кого доступна услуга')
 
     class Meta:
         verbose_name = 'Услуга'

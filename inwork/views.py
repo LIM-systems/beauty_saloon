@@ -1,22 +1,31 @@
 from datetime import datetime as dt, timedelta as td
 
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import inwork.models as md
-from inwork.utils import find_available_time, find_available_time_for_all_days
-from pysnooper import snoop
+from inwork.utils import find_available_time_for_all_days
+
 
 class APIAllCategories(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        '''Получить все категории'''
-        categories = md.Categories.objects.all().values('id', 'name')
-        return Response({'categories': categories}, status=status.HTTP_200_OK)
+        '''Получить все категории с учетом персон'''
+        result = {'categories': []}
+        persons: list = request.data.get('persons')
+        if not persons:
+            persons = md.Person.objects.all().values_list('title', flat=True)
+        print(persons)
+        categories = md.Service.objects.filter(
+                persons__title__in=persons
+            ).values_list('categories__id', 'categories__name')
+        for id_, name in categories:
+            if name not in str(result):
+                result['categories'].append({'id': id_, 'name': name})
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class APISelectServices(APIView):

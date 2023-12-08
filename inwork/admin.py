@@ -40,7 +40,7 @@ class CategoriesAdmin(admin.ModelAdmin):
 @admin.register(md.Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ('name', 'duration', 'price')
-    list_filter = ('name', 'duration', 'price')
+    list_filter = ('name', 'categories', 'persons', 'duration', 'price')
 
 
 @admin.register(md.MasterSchedule)
@@ -57,3 +57,8 @@ class VisitJournalTimeAdmin(admin.ModelAdmin):
                    'visit_service', 'estimation', 'finish', 'cancel')
     readonly_fields = ('estimation',)
     ordering = ('-date',)
+
+
+# @admin.register(md.Person)
+# class PersonsAdmin(admin.ModelAdmin):
+#     pass
