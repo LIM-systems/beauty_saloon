@@ -36,7 +36,7 @@ def show_user_main_menu(tg_id, row_width=2):
     sign_up_button = types.KeyboardButton(
         text=ld.main_menu_buttons[1],
         web_app=types.web_app_info.WebAppInfo(
-            url=env.BASE_URL + f'sign_in/{tg_id}/'))
+            url=env.BASE_URL + f'sign_up?id={tg_id}'))
     my_entries_button = types.KeyboardButton(
         ld.main_menu_buttons[2])
     about_us_button = types.KeyboardButton(

@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 
 import inwork.models as md
 from inwork.utils import find_available_time_for_all_days
+from env import TOKEN
+import requests
 
 
 class APIAllCategories(APIView):
@@ -120,6 +122,11 @@ class APICreateRecords(APIView):
                 )
                 # обновляем переменную продолжительности для расчета следующей услуги
                 duration = service.duration
+        # отправляем уведомление об успешной записи
+        URL = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage'
+        data = {'chat_id': client_tg_id, 
+                'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
+        requests.post(URL, data=data)
         return Response({'responce': True}, status=status.HTTP_200_OK)
 
 
