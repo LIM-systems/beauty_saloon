@@ -8,4 +8,6 @@ urlpatterns = [
     path('select_masters', views.APISelectMasters.as_view()),
     path('get_master_schedule', views.APIGetMasterSchedule.as_view()),
     path('create_records', views.APICreateRecords.as_view()),
+    path('get_schedules', views.APIMonthMastersShedule.as_view()),
+    path('new_schedules', views.APICreateSchedule.as_view()),
 ]

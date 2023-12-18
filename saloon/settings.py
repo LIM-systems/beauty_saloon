@@ -25,12 +25,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'inwork.apps.InworkConfig',
+    'corsheaders',
     'rest_framework',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ]
 }
 
@@ -42,14 +43,22 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:5500',
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'saloon.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -92,8 +101,8 @@ MEDIA_ROOT = path.join(BASE_DIR, 'media/')
 # developer
 if DEBUG:
     ALLOWED_HOSTS = ['*']
-    STATIC_ROOT = path.join(BASE_DIR, 'static/')
-    # STATICFILES_DIRS = [path.join(BASE_DIR, 'static/'),]
+    # STATIC_ROOT = path.join(BASE_DIR, 'static/')
+    STATICFILES_DIRS = [path.join(BASE_DIR, 'static/'),]
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

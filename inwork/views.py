@@ -1,4 +1,4 @@
-from datetime import datetime as dt, timedelta as td
+from datetime import datetime as dt, timedelta as td, date
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -18,7 +18,6 @@ class APIAllCategories(APIView):
         persons: list = request.data.get('persons')
         if not persons:
             persons = md.Person.objects.all().values_list('title', flat=True)
-        print(persons)
         categories = md.Service.objects.filter(
                 persons__title__in=persons
             ).values_list('categories__id', 'categories__name')
@@ -41,8 +40,11 @@ class APISelectServices(APIView):
             return Response(
                 {'nodata': 'Услуг по выбранным категориям не найдено'},
                 status=status.HTTP_204_NO_CONTENT)
-
-        return Response({'services': services}, status=status.HTTP_200_OK)
+        services_data = []
+        for service in services:
+            if service not in services_data:
+                services_data.append(service)
+        return Response({'services': services_data}, status=status.HTTP_200_OK)
 
 
 class APISelectMasters(APIView):
@@ -53,17 +55,28 @@ class APISelectMasters(APIView):
         services = request.data.get('services')
         masters = md.Master.objects.filter(
             services__in=services).distinct().values(
-                'id', 'name__name', 'description')
+                'id', 'name__name', 'description', 'services')
         if not masters:
             return Response(
                 {'nodata': 'Мастеров по выбранным услугам не найдено'},
                 status=status.HTTP_204_NO_CONTENT)
-        services = md.Service.objects.filter(id__in=services)
-        services = [service.name for service in services]
-        to_json = {
-            'masters': {'services': services, 'services_masters': masters}
-        }
-        return Response(to_json, status=status.HTTP_200_OK)
+        masters_data = {}
+        for master in masters:
+            id = master['id']
+            service = md.Service.objects.filter(id=master.get('services')).first()
+            service = {'name': service.name, 'id': service.id}
+            if id not in masters_data:
+                masters_data[id] = {
+                    'id': id,
+                    'name': master['name__name'],
+                    'description': master['description'],
+                    'services': [service]
+                }
+            else:
+                masters_data[id]['services'].append(service)
+
+        result_list = list(masters_data.values())
+        return Response({'masters': result_list}, status=status.HTTP_200_OK)
 
 
 class APIGetMasterSchedule(APIView):
@@ -108,3 +121,64 @@ class APICreateRecords(APIView):
                 # обновляем переменную продолжительности для расчета следующей услуги
                 duration = service.duration
         return Response({'responce': True}, status=status.HTTP_200_OK)
+
+
+# Для админки
+class APIMonthMastersShedule(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        '''Получить имена и id мастеров и их рабочие дни на выбранный месяц'''
+        month: str = request.data.get('month')
+        year: str = request.data.get('year')
+        masters = md.Master.objects.all()
+        masters_schedules: list = []
+        for master in masters:
+            schedule = md.MasterSchedule.objects.filter(
+                master=master,
+                date__month=month,
+                date__year=year,
+            ).values('date')
+            masters_schedules.append(
+                    {
+                        'id': master.id,
+                        'name': master.name.name,
+                        'schedule': list(schedule),
+                    }
+                )
+        return Response({'schedule': masters_schedules}, status=status.HTTP_200_OK)
+
+
+class APICreateSchedule(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        '''Создать записи графика мастеров'''
+        new_schedules: list = request.data.get('new_schedules')
+        selected_month: str = request.data.get('selectedMonth')
+
+        for schedule in new_schedules:
+            # создаём новые записи
+            master = md.Master.objects.filter(id=schedule.get('masterID')).first()
+            work_dates = schedule.get('workDates')
+            dates: list = [dt.strptime(date, '%Y-%m-%d') for date in work_dates]
+            for selected_date in dates:
+                md.MasterSchedule.objects.create(
+                    master=master,
+                    date=selected_date,
+                    start_time='09:00:00',
+                    end_time='21:00:00'
+                )
+
+            # очистка убранных записей
+            schedule_entries = md.MasterSchedule.objects.filter(master=master).exclude(date__in=dates).all()
+            entries_for_delete = []
+            for entry in schedule_entries:
+                if entry.date.month == int(selected_month):
+                    entries_for_delete.append(entry)
+            if entries_for_delete:
+                for entry in entries_for_delete:
+                    entry.delete()
+
+        return Response({'status': True}, status=status.HTTP_200_OK)
+
