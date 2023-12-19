@@ -21,8 +21,8 @@ class APIAllCategories(APIView):
         if not persons:
             persons = md.Person.objects.all().values_list('title', flat=True)
         categories = md.Service.objects.filter(
-                persons__title__in=persons
-            ).values_list('categories__id', 'categories__name')
+            persons__title__in=persons
+        ).values_list('categories__id', 'categories__name')
         for id_, name in categories:
             if name not in str(result):
                 result['categories'].append({'id': id_, 'name': name})
@@ -65,7 +65,8 @@ class APISelectMasters(APIView):
         masters_data = {}
         for master in masters:
             id = master['id']
-            service = md.Service.objects.filter(id=master.get('services')).first()
+            service = md.Service.objects.filter(
+                id=master.get('services')).first()
             service = {'name': service.name, 'id': service.id}
             if id not in masters_data:
                 masters_data[id] = {
@@ -124,7 +125,7 @@ class APICreateRecords(APIView):
                 duration = service.duration
         # отправляем уведомление об успешной записи
         URL = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage'
-        data = {'chat_id': client_tg_id, 
+        data = {'chat_id': client_tg_id,
                 'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
         requests.post(URL, data=data)
         return Response({'responce': True}, status=status.HTTP_200_OK)
@@ -147,12 +148,12 @@ class APIMonthMastersShedule(APIView):
                 date__year=year,
             ).values('date')
             masters_schedules.append(
-                    {
-                        'id': master.id,
-                        'name': master.name.name,
-                        'schedule': list(schedule),
-                    }
-                )
+                {
+                    'id': master.id,
+                    'name': master.name.name,
+                    'schedule': list(schedule),
+                }
+            )
         return Response({'schedule': masters_schedules}, status=status.HTTP_200_OK)
 
 
@@ -166,19 +167,20 @@ class APICreateSchedule(APIView):
 
         for schedule in new_schedules:
             # создаём новые записи
-            master = md.Master.objects.filter(id=schedule.get('masterID')).first()
+            master = md.Master.objects.get(id=schedule.get('masterID'))
             work_dates = schedule.get('workDates')
-            dates: list = [dt.strptime(date, '%Y-%m-%d') for date in work_dates]
+            dates: list = [dt.strptime(date, '%Y-%m-%d')
+                           for date in work_dates]
             for selected_date in dates:
-                md.MasterSchedule.objects.create(
+                md.MasterSchedule.objects.update_or_create(
                     master=master,
                     date=selected_date,
-                    start_time='09:00:00',
-                    end_time='21:00:00'
+                    defaults={'start_time': '09:00:00', 'end_time': '21:00:00'}
                 )
 
             # очистка убранных записей
-            schedule_entries = md.MasterSchedule.objects.filter(master=master).exclude(date__in=dates).all()
+            schedule_entries = md.MasterSchedule.objects.filter(
+                master=master).exclude(date__in=dates)
             entries_for_delete = []
             for entry in schedule_entries:
                 if entry.date.month == int(selected_month):
@@ -188,4 +190,3 @@ class APICreateSchedule(APIView):
                     entry.delete()
 
         return Response({'status': True}, status=status.HTTP_200_OK)
-

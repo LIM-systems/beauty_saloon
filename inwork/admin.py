@@ -47,6 +47,7 @@ class ServiceAdmin(admin.ModelAdmin):
 class MasterScheduleAdmin(admin.ModelAdmin):
     list_display = ('master', 'date', 'start_time', 'end_time')
     list_filter = ('master', 'date', 'start_time', 'end_time')
+    ordering = ('-date', 'master')
 
 
 @admin.register(md.VisitJournal)

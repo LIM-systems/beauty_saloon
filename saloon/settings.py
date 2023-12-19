@@ -14,7 +14,7 @@ SECRET_KEY = env.SECRET_KEY
 
 DEBUG = env.DEBUG
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.ALLOWED_HOSTS
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -47,9 +47,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5500',
-]
+CORS_ALLOWED_ORIGINS = env.CORS_ALLOWED_ORIGINS
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -100,7 +98,6 @@ MEDIA_ROOT = path.join(BASE_DIR, 'media/')
 
 # developer
 if DEBUG:
-    ALLOWED_HOSTS = ['*']
     # STATIC_ROOT = path.join(BASE_DIR, 'static/')
     STATICFILES_DIRS = [path.join(BASE_DIR, 'static/'),]
     DATABASES = {
@@ -112,7 +109,6 @@ if DEBUG:
 
 # production
 else:
-    ALLOWED_HOSTS = ['*']
     STATIC_ROOT = path.join(BASE_DIR, 'static/')
     # STATICFILES_DIRS = [path.join(BASE_DIR, 'static/'),]
     DATABASES = {
