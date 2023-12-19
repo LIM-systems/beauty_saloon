@@ -6,6 +6,9 @@ import bot.CRUD.common as sqlcom
 from bot import loader as ld
 from bot.loader import dp
 from bot.utils import keyboards as kb
+from bot.utils import utils
+from bot.utils.states import ClientDataChange
+from aiogram.dispatcher import FSMContext
 
 
 async def message_rec(records):
@@ -126,3 +129,42 @@ async def estimation(call: types.CallbackQuery):
     estimate = call.data.split(' ')[-1]
     await sqlcom.update_visit_journal(record_id, {'estimation': estimate})
     await call.message.edit_text('Благодарим за оценку! ❤️')
+
+
+@dp.message_handler(Text(ld.main_menu_buttons[0]))
+async def show_profile(msg: types.Message):
+    await utils.profile_menu(msg.from_user.id, msg)
+
+
+@dp.callback_query_handler(Text(startswith='change_profile'))
+async def get_new_data(call: types.CallbackQuery):
+    '''Получить новые данные профиля'''
+    await call.message.delete()
+    if 'Имя' in call.data:
+        await ClientDataChange.name.set()
+        await call.message.answer('Введите новое имя')
+    elif 'Телефон' in call.data:
+        await ClientDataChange.phone.set()
+        await call.message.answer('Введите новый номер телефона', 
+                                reply_markup=kb.send_phone())
+
+
+@dp.message_handler(state=ClientDataChange.name)
+async def set_new_name(msg: types.Message, state: FSMContext):
+    '''Запись нового имени'''
+    await sqlc.update_client(msg.from_user.id, {'name': msg.text})
+    await state.finish()
+    await msg.answer('Имя изменено')
+    await utils.profile_menu(msg.from_user.id, msg)
+
+
+@dp.message_handler(state=ClientDataChange.phone, content_types=['contact', 'text'])
+async def set_new_phone(msg: types.Message, state: FSMContext):
+    '''Запись нового телефона'''
+    phone = msg.contact.phone_number if msg.contact else msg.text
+    clear_phone = utils.clean_phone(phone) or '-'
+    await sqlc.update_client(msg.from_user.id, {'phone': clear_phone})
+    await state.finish()
+    await msg.answer('Телефон изменен',
+        reply_markup=kb.show_user_main_menu(msg.from_user.id))
+    await utils.profile_menu(msg.from_user.id, msg)

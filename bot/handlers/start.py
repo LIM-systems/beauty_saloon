@@ -11,7 +11,7 @@ from bot.utils.states import ClientData
 
 
 @dp.message_handler(Text(ld.main_menu_buttons[3]))
-async def get_master_date_in_records(msg: types.Message):
+async def show_about_us(msg: types.Message):
     '''О салоне'''
     with open('media/saloon/about.jpg', 'rb') as photo:
         await msg.answer_photo(photo, caption=texts.welcome)

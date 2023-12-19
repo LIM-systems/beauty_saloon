@@ -30,6 +30,16 @@ def create_or_update_client(tg_id, params):
 
 
 @sync_to_async()
+def get_user_info(tg_id):
+    '''Получить данные клиента для профиля'''
+    user = mdl.Client.objects.filter(tg_id=tg_id).first()
+    return {
+        'name': user.name,
+        'phone': user.phone,
+    }
+
+
+@sync_to_async()
 def update_client(tg_id, params):
     '''Обновлении информации о клиенте или создание клиента'''
     mdl.Client.objects.filter(tg_id=tg_id).update(**params)

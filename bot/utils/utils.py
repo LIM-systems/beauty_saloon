@@ -3,6 +3,7 @@ from datetime import datetime
 from aiogram import types
 from aiogram.dispatcher.middlewares import LifetimeControllerMiddleware
 from bot.CRUD import client as sqlc
+from bot.utils import keyboards as kb
 
 
 class ClientLastVisitMiddleware(LifetimeControllerMiddleware):
@@ -31,3 +32,17 @@ def clean_phone(phone):
     else:
         return False
     return clear
+
+
+async def profile_menu(tg_id, msg):
+    user_data = await sqlc.get_user_info(tg_id)
+    name = user_data.get('name')
+    phone = user_data.get('phone')
+    message = f'''Профиль
+
+Имя: <b>{name}</b>
+Телефон: <b>{phone}</b>
+
+Что желаете изменить?
+'''
+    await msg.answer(message, reply_markup=kb.inline_btns(['Имя', 'Телефон'], 'change_profile'))
