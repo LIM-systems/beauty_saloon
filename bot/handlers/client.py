@@ -1,3 +1,6 @@
+from re import match
+from datetime import datetime as dt
+
 from aiogram import types
 from aiogram.dispatcher.filters import Text
 
@@ -9,6 +12,8 @@ from bot.utils import keyboards as kb
 from bot.utils import utils
 from bot.utils.states import ClientDataChange
 from aiogram.dispatcher import FSMContext
+
+import env
 
 
 async def message_rec(records):
@@ -117,6 +122,9 @@ async def confirm_cancel_record(call: types.CallbackQuery):
         record_id = call.data.split('/')[1]
         await sqlcom.update_visit_journal(record_id, {'cancel': True})
         await call.message.edit_text('Запись отменена')
+        # сообщение админам
+        adm_text = await utils.alert_admins_msg(record_id, 'Запись отменена')
+        await ld.bot.send_message(chat_id=env.CHAT_ADMINS, text=adm_text)
     else:
         await call.message.delete()
 
@@ -133,38 +141,79 @@ async def estimation(call: types.CallbackQuery):
 
 @dp.message_handler(Text(ld.main_menu_buttons[0]))
 async def show_profile(msg: types.Message):
-    await utils.profile_menu(msg.from_user.id, msg)
+    user_data = await sqlc.get_user_info(msg.from_user.id)
+    name = user_data.get('name')
+    phone = user_data.get('phone')
+    message = f'''Профиль
+
+Имя: <b>{name}</b>
+Телефон: <b>{phone}</b>
+
+Что желаете изменить?
+'''
+    await msg.answer(
+        message,
+        reply_markup=kb.inline_btns(ld.profile_btn, 'change_profile'))
 
 
 @dp.callback_query_handler(Text(startswith='change_profile'))
 async def get_new_data(call: types.CallbackQuery):
     '''Получить новые данные профиля'''
     await call.message.delete()
-    if 'Имя' in call.data:
+    if ld.profile_btn[0] in call.data:
         await ClientDataChange.name.set()
-        await call.message.answer('Введите новое имя')
-    elif 'Телефон' in call.data:
+        await call.message.answer('Введите новое Фамилию Имя')
+    elif ld.profile_btn[1] in call.data:
         await ClientDataChange.phone.set()
-        await call.message.answer('Введите новый номер телефона', 
-                                reply_markup=kb.send_phone())
+        await call.message.answer('Введите новый номер телефона или нажмите кнопку ниже',
+                                  reply_markup=kb.send_phone())
 
 
 @dp.message_handler(state=ClientDataChange.name)
 async def set_new_name(msg: types.Message, state: FSMContext):
     '''Запись нового имени'''
+    regex = match(r'\D+ \D+', msg.text)
+    if msg.text in ld.main_menu_buttons or not regex:
+        await msg.answer('<b>Введите правильно Имя Фамилию</b> и отправьте сообщением')
+        return
+    if '/start' in msg.text:
+        await state.finish()
+        await msg.answer('Отмена! Вы всегда можете попробовать позже')
+        return
     await sqlc.update_client(msg.from_user.id, {'name': msg.text})
     await state.finish()
-    await msg.answer('Имя изменено')
-    await utils.profile_menu(msg.from_user.id, msg)
+    await msg.answer('Фамилия Имя изменены')
+    await show_profile(msg)
 
 
-@dp.message_handler(state=ClientDataChange.phone, content_types=['contact', 'text'])
+@dp.message_handler(state=ClientDataChange.phone,
+                    content_types=['contact', 'text'])
 async def set_new_phone(msg: types.Message, state: FSMContext):
     '''Запись нового телефона'''
     phone = msg.contact.phone_number if msg.contact else msg.text
-    clear_phone = utils.clean_phone(phone) or '-'
+    clear_phone = utils.clean_phone(phone)
+    if not clear_phone:
+        await msg.answer('<b>Напишите номер телефона в правильном формате.</b>\nНапример 89001112233')
+        return
     await sqlc.update_client(msg.from_user.id, {'phone': clear_phone})
     await state.finish()
     await msg.answer('Телефон изменен',
-        reply_markup=kb.show_user_main_menu(msg.from_user.id))
-    await utils.profile_menu(msg.from_user.id, msg)
+                     reply_markup=kb.show_user_main_menu(msg.from_user.id))
+    await show_profile(msg)
+
+
+@dp.callback_query_handler(Text(startswith='confirm'))
+async def confirm_record(call: types.CallbackQuery):
+    '''Подтверждени или отмена записи после уведомления за 2 или 24 часа'''
+    visit_id = call.data.split('/')[1]
+    if ld.confirm_btn[0] in call.data:
+        await call.message.delete()
+        await sqlcom.update_visit_journal(visit_id, {'confirmation': dt.now()})
+        await call.message.answer('🙏 Благодарим за подтверждение!')
+    if ld.confirm_btn[1] in call.data:
+        await call.message.delete()
+        await sqlcom.update_visit_journal(visit_id, {'cancel': True})
+        await call.message.answer('Запись отменена')
+        # сообщение админам
+        adm_text = await utils.alert_admins_msg(visit_id, 'Запись отменена')
+        await ld.bot.send_message(chat_id=env.CHAT_ADMINS, text=adm_text)

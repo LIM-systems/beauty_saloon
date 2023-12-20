@@ -9,7 +9,6 @@ def check_for_newbie(tg_id, name):
     client = mdl.Client.objects.filter(tg_id=tg_id).first()
     # если не новый, то записываем его телеграм ID в бд
     if not client:
-        # mdl.Client.objects.create(tg_id=tg_id, name=name)
         return True
     return False
 
@@ -94,4 +93,7 @@ def get_client_record(record_id):
             visit.visit_service.duration,
             visit.visit_service.price,
             visit.estimation,
+            visit.visit_client.name,
+            visit.visit_client.phone,
+            visit.confirmation,
         )

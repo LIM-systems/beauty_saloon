@@ -53,13 +53,10 @@ class MasterScheduleAdmin(admin.ModelAdmin):
 @admin.register(md.VisitJournal)
 class VisitJournalTimeAdmin(admin.ModelAdmin):
     list_display = ('visit_client', 'visit_master', 'date',
-                    'visit_service', 'estimation', 'finish', 'cancel')
+                    'visit_service', 'estimation', 'confirmation',
+                    'finish', 'cancel')
     list_filter = ('visit_client', 'visit_master', 'date',
-                   'visit_service', 'estimation', 'finish', 'cancel')
+                   'visit_service', 'estimation', 'confirmation',
+                   'finish', 'cancel')
     readonly_fields = ('estimation',)
     ordering = ('-date',)
-
-
-# @admin.register(md.Person)
-# class PersonsAdmin(admin.ModelAdmin):
-#     pass

@@ -63,6 +63,23 @@ class Master(models.Model):
         return self.name.name
 
 
+# class Admin(models.Model):
+#     name = models.ForeignKey(
+#         to=Client, on_delete=models.CASCADE, verbose_name='ФИО')
+#     active = models.BooleanField(
+#         default=True, verbose_name='Активен',
+#         help_text='Если активен то будут приходить уведомления')
+#     description = models.TextField(
+#         verbose_name='Описание', blank=True, null=True)
+
+#     class Meta:
+#         verbose_name = 'Администратора'
+#         verbose_name_plural = 'Администраторы'
+
+#     def __str__(self):
+#         return self.name.name
+
+
 class Categories(models.Model):
     name = models.CharField(max_length=255, verbose_name='Название')
 
@@ -119,6 +136,8 @@ class VisitJournal(models.Model):
     date = models.DateTimeField(verbose_name='Дата посещения')
     visit_service = models.ForeignKey(
         Service, on_delete=models.CASCADE, verbose_name='Услуга')
+    confirmation = models.DateTimeField(
+        verbose_name='Подтверждение', blank=True, null=True)
     cancel = models.BooleanField(default=False, verbose_name='Услуга отменена')
     finish = models.BooleanField(default=False, verbose_name='Услуга оказана')
     estimation = models.IntegerField(

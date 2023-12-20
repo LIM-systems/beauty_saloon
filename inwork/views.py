@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 import inwork.models as md
 from inwork.utils import find_available_time_for_all_days
-from env import TOKEN
+from env import TOKEN, BASE_URL, CHAT_ADMINS
 import requests
 
 
@@ -128,6 +128,19 @@ class APICreateRecords(APIView):
         data = {'chat_id': client_tg_id,
                 'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
         requests.post(URL, data=data)
+
+        # если это первая запись клиенту то
+        finish_services = md.VisitJournal.objects.filter(
+            visit_client=client, finish=True).count()
+        if finish_services < 1:
+            data = {
+                'chat_id': CHAT_ADMINS,
+                'text': f'''
+<a href="{BASE_URL}admin/inwork/visitjournal/?visit_client__id__exact={client.id}">
+Клиент {client.name} записан в первый раз.
+</a>
+<b>Позвоните для подтверждения {client.phone}</b>'''}
+            requests.post(URL, data=data)
         return Response({'responce': True}, status=status.HTTP_200_OK)
 
 

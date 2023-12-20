@@ -6,8 +6,10 @@ from aiogram.utils.exceptions import BotBlocked, UserDeactivated
 
 from bot.CRUD import common as sqlcom
 from bot.CRUD import client as sqlc
-from bot.loader import bot, logger, estimation
+from bot.loader import bot, logger, estimation, confirm_btn
 from bot.utils import keyboards as kb
+
+import env
 
 
 DELTA2 = 2  # часов
@@ -19,9 +21,11 @@ async def send_message_schedule(tg_id, text, keyboard=None):
     '''Отправить сообщение'''
     try:
         if keyboard:
-            await bot.send_message(tg_id, text, reply_markup=keyboard)
+            await bot.send_message(
+                tg_id, text, reply_markup=keyboard,
+                disable_web_page_preview=True)
         else:
-            await bot.send_message(tg_id, text)
+            await bot.send_message(tg_id, text, disable_web_page_preview=True)
     except BotBlocked:
         logger.error(f'{tg_id} - пользователь заблокировал бота')
         await sqlc.update_client(tg_id, {'is_blocked': True})
@@ -62,11 +66,13 @@ def message_formation(visit, notifi=None, complete=None):
 async def select_records_for_notifications():
     '''Получить все записи клиентов и вышлем если пора напомнить (за 2 и 24 часа)'''
     visits = await sqlcom.select_open_recors()
-    # visit = id, record_time, master_name, client_name, client_tg_id, service, duration, price
+    # visit = id, record_time, master_name, client_name, client_tg_id, service, duration, price, confirmation
     for visit in visits:
         # если дата-время входит в промежуток данной минуты
         now_delta2 = now() + td(hours=DELTA2)
         now_delta24 = now() + td(hours=DELTA24)
+        # время для уведомления админов если не подтверждена
+        admin_alert =  visit[1] - td(minutes=90)
         # время после оказания услуги (время записи + продолжительность + запас)
         service_completed = visit[1] + td(minutes=visit[6] + DELTA_COMPLETED)
 
@@ -75,11 +81,15 @@ async def select_records_for_notifications():
         if now_delta2 - td(seconds=30) < visit[1] < now_delta2 + td(seconds=30):
             print('now_delta2', now_delta2, visit[1])
             # отправляем уведомление клиенту
-            await send_message_schedule(visit[4], message_notifi)
+            await send_message_schedule(
+                tg_id=visit[4], text=message_notifi,
+                keyboard=kb.inline_btns(confirm_btn, f'confirm/{visit[0]}'))
         # уведомление за 24 часа
         if now_delta24 - td(seconds=30) < visit[1] < now_delta24 + td(seconds=30):
             print('now_delta24', now_delta24, visit[1])
-            await send_message_schedule(visit[4], message_notifi)
+            await send_message_schedule(
+                tg_id=visit[4], text=message_notifi,
+                keyboard=kb.inline_btns(confirm_btn, f'confirm/{visit[0]}'))
         # уведомление об оценке сервиса после оказания услуги
         if now() - td(seconds=30) < service_completed < now() + td(seconds=30):
             print('service_completed', service_completed)
@@ -93,6 +103,18 @@ async def select_records_for_notifications():
                 keyboard=kb.inline_btns(
                     estimation, f'estimation/{visit[0]}', row_width=5)
             )
+        # уведомление админов в чат если за 1.5 часа не получено подтверждение от клиента
+        if now() - td(seconds=30) < admin_alert < now() + td(seconds=30) and not visit[8]:
+            await bot.send_message(
+                chat_id=env.CHAT_ADMINS,
+                text=f'''
+<a href="{env.BASE_URL}admin/inwork/visitjournal/{visit[0]}">
+Запись не подтверждена </a>
+Клиент: <b>{visit[3]}</b> <code>{visit[9]}</code>
+Мастер: <b>{visit[2]}</b>
+Услуга <b>{visit[5]}</b>
+Время <b>{visit[1]}</b>
+''')
 
 
 async def scheduler():

@@ -5,6 +5,8 @@ from aiogram.dispatcher.middlewares import LifetimeControllerMiddleware
 from bot.CRUD import client as sqlc
 from bot.utils import keyboards as kb
 
+import env
+
 
 class ClientLastVisitMiddleware(LifetimeControllerMiddleware):
     '''Запись времени посещения бота при любых действиях клиента'''
@@ -34,15 +36,14 @@ def clean_phone(phone):
     return clear
 
 
-async def profile_menu(tg_id, msg):
-    user_data = await sqlc.get_user_info(tg_id)
-    name = user_data.get('name')
-    phone = user_data.get('phone')
-    message = f'''Профиль
-
-Имя: <b>{name}</b>
-Телефон: <b>{phone}</b>
-
-Что желаете изменить?
+async def alert_admins_msg(visit_id, text):
+    '''Оповещение админов'''
+    visit = await sqlc.get_client_record(visit_id)
+    return f'''
+<a href="{env.BASE_URL}admin/inwork/visitjournal/{visit_id}">
+{text} </a>
+Клиент: <b>{visit[7]}</b> <code>{visit[8]}</code>
+Мастер: <b>{visit[2]}</b>
+Услуга <b>{visit[3]}</b>
+Время <b>{visit[1]}</b>
 '''
-    await msg.answer(message, reply_markup=kb.inline_btns(['Имя', 'Телефон'], 'change_profile'))

@@ -31,5 +31,7 @@ def select_open_recors():
             visit.visit_service,
             visit.visit_service.duration,
             visit.visit_service.price,
+            visit.confirmation,
+            visit.visit_client.phone,
         )
         for visit in visits]

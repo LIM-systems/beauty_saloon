@@ -25,7 +25,7 @@ def find_available_time(master_id, services_duration, planned_date):
     # Ищем свободное время для записи
     current_time = start_time
     available_times = []
-    # пока текущее время + длительность услуги меньше конца рабочего дня 
+    # пока текущее время + длительность услуги меньше конца рабочего дня
     while current_time + td(minutes=services_duration) <= end_time:
         # Проверяем, свободно ли время
         is_time_free = all(
@@ -41,18 +41,22 @@ def find_available_time(master_id, services_duration, planned_date):
     print(available_times)
     return available_times
 
+
 def find_available_time_for_all_days(master_id, services_id):
     '''Расчет времени для всех дней расписания мастера'''
-    services = md.Service.objects.filter(id__in=services_id).values_list('duration', flat=True)
+    services = md.Service.objects.filter(
+        id__in=services_id).values_list('duration', flat=True)
     # Получаем все дни, для которых есть расписание
     schedule_days = md.MasterSchedule.objects.filter(
         master__id=master_id,
-        date__gte=dt.now().date()).order_by('date').values_list('date', flat=True).distinct()
+        date__gte=dt.now().date()).order_by(
+            'date').values_list('date', flat=True).distinct()
 
     result = []
 
     for planned_date in schedule_days:
-        available_times = find_available_time(master_id, sum(services), planned_date)
+        available_times = find_available_time(
+            master_id, sum(services), planned_date)
         result.append({
             "date": planned_date.strftime('%Y-%m-%d'),
             "free_times": [time.strftime('%H:%M') for time in available_times]
