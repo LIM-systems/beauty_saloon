@@ -40,7 +40,7 @@ async def send_message_schedule(tg_id, text, keyboard=None):
 
 def message_formation(visit, notifi=None, complete=None):
     '''Формирование сообщения для напоминания'''
-    id, record_time, master_name, client_name, client_tg_id, service, duration, price = visit
+    id, record_time, master_name, client_name, client_tg_id, service, duration, price, confirmation, phone = visit
     text = f'''
 Время: <b>{record_time.strftime('%d-%m-%Y %H:%M')}</b>
 Продолжительность: <b>{duration}мин.</b>
