@@ -135,6 +135,7 @@ class APICreateRecords(APIView):
         if finish_services < 1:
             data = {
                 'chat_id': CHAT_ADMINS,
+                'parse_mode': 'HTML',
                 'text': f'''
 <a href="{BASE_URL}admin/inwork/visitjournal/?visit_client__id__exact={client.id}">
 Клиент {client.name} записан в первый раз.
