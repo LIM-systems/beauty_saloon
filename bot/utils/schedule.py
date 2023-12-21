@@ -56,7 +56,7 @@ def message_formation(visit, notifi=None, complete=None):
     '''
     elif complete:
         message = f'''
-Благодарим за посещение нашего салона крастоы!
+<b>Благодарим за посещение нашего салона красоты!</b>
 Пожалуйста оцените качество оказанной услуги
 {text}
 '''
@@ -72,7 +72,7 @@ async def select_records_for_notifications():
         now_delta2 = now() + td(hours=DELTA2)
         now_delta24 = now() + td(hours=DELTA24)
         # время для уведомления админов если не подтверждена
-        admin_alert =  visit[1] - td(minutes=90)
+        admin_alert = visit[1] - td(minutes=90)
         # время после оказания услуги (время записи + продолжительность + запас)
         service_completed = visit[1] + td(minutes=visit[6] + DELTA_COMPLETED)
 
@@ -112,8 +112,8 @@ async def select_records_for_notifications():
 Запись не подтверждена </a>
 Клиент: <b>{visit[3]}</b> <code>{visit[9]}</code>
 Мастер: <b>{visit[2]}</b>
-Услуга <b>{visit[5]}</b>
-Время <b>{visit[1]}</b>
+Услуга: <b>{visit[5]}</b>
+Время: <b>{visit[1]}</b>
 ''')
 
 

@@ -14,11 +14,20 @@ def find_available_time(master_id, services_duration, planned_date):
 
     start_time = dt.combine(planned_date, master_schedule.start_time)
     end_time = dt.combine(planned_date, master_schedule.end_time)
+    # для сегодня берем время сейчас + выровнять до 0 или 30мин
+    if planned_date == dt.now().date():
+        minutes_now = dt.now().minute
+        if minutes_now >= 30:
+            start_time = (dt.now() + td(minutes=30)).replace(
+                minute=0, second=0, microsecond=0)
+        elif minutes_now >= 0:
+            start_time = dt.now().replace(minute=30, second=0, microsecond=0)
+    print(start_time)
 
     # Получаем все записи в журнале для выбранного мастера и дня
     existing_visits = md.VisitJournal.objects.filter(
         visit_master__id=master_id,
-        date__gte=start_time,
+        date__gte=start_time - td(minutes=180),
         date__lte=end_time,
         finish=False, cancel=False).order_by('date')
 
@@ -38,7 +47,7 @@ def find_available_time(master_id, services_duration, planned_date):
             available_times.append(current_time)
         # Переходим к следующему времени с шагом 30 минут
         current_time += td(minutes=30)
-    print(available_times)
+
     return available_times
 
 

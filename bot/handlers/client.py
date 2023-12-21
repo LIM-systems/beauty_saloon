@@ -10,7 +10,7 @@ from bot import loader as ld
 from bot.loader import dp
 from bot.utils import keyboards as kb
 from bot.utils import utils
-from bot.utils.states import ClientDataChange
+from bot.utils.states import ClientData, ClientDataChange
 from aiogram.dispatcher import FSMContext
 
 import env
@@ -63,7 +63,9 @@ async def get_client_records(msg: types.Message):
 
     # нет никаких записей
     if not not_finish and not finish:
-        await msg.answer('<b>Записи не найдены</b>')
+        await msg.answer(
+            '<b>Записи не найдены</b>',
+            reply_markup=kb.show_user_main_menu(tg_id))
     # есть только будущие записи
     elif not_finish and not finish:
         records = await sqlc.select_client_recors(tg_id, finish=False)
@@ -73,7 +75,8 @@ async def get_client_records(msg: types.Message):
         records = await sqlc.select_client_recors(tg_id, finish=True)
         message = await message_rec(records)
         await msg.answer(
-            f'<b>Ваши завершенные записи</b>\n{message}')
+            f'<b>Ваши завершенные записи</b>\n{message}',
+            reply_markup=kb.show_user_main_menu(tg_id))
     # есть и завершенные и будущие записи
     else:
         await msg.answer(
@@ -94,7 +97,8 @@ async def get_client_records2(call: types.CallbackQuery):
         records = await sqlc.select_client_recors(tg_id, finish=True)
         message = await message_rec(records)
         await call.message.answer(
-            f'<b>Ваши завершенные записи</b>\n{message}')
+            f'<b>Ваши завершенные записи</b>\n{message}',
+            )
 
 
 @dp.callback_query_handler(Text(startswith='cancel'))
@@ -136,7 +140,42 @@ async def estimation(call: types.CallbackQuery):
     record_id = call.data.split('/')[1]
     estimate = call.data.split(' ')[-1]
     await sqlcom.update_visit_journal(record_id, {'estimation': estimate})
-    await call.message.edit_text('Благодарим за оценку! ❤️')
+    if int(estimate) >= 4:
+        await call.message.edit_text('Благодарим за оценку! ❤️')
+    # оценка 3 и ниже, просим дать комментарий
+    else:
+        await call.message.edit_text(
+            'Пожалуйста оставьте комментарий по оказанной услуге и отправьте сообщением',
+            reply_markup=kb.inline_btns(
+                (ld.confirm_btn[1],), f'comment/{record_id}'))
+        await ClientData.comment.set()
+
+
+@dp.callback_query_handler(Text(startswith='comment/'))
+async def cancel_comment(call: types.CallbackQuery, state: FSMContext):
+    '''Отказ от комментария'''
+    # call.data = comment/record_id/confirm_btn[1]
+    record_id = call.data.split('/')[1]
+    await sqlcom.update_visit_journal(
+        record_id, {'description': 'Отказ от комметария'})
+    await state.finish()
+    await call.message.edit_text('Спасибо!')
+
+
+@dp.message_handler(state=ClientData.comment)
+async def set_comment(msg: types.Message, state: FSMContext):
+    '''Запись коммента плохой оценки в БД'''
+    if '/start' in msg.text or msg.text in ld.main_menu_buttons:
+        await msg.answer('Пожалуйста оставьте текстовый комментарий и отправьте сообщением')
+        return
+    tg_id = msg.from_user.id
+    record_id = await sqlc.get_client_record_with_bad_estimate(tg_id)
+    if record_id:
+        await sqlcom.update_visit_journal(record_id, {'description': msg.text})
+    await msg.answer(
+            'Благодарим за оценку! ❤️\nМы обязательно прочитаем ваш отзыв!',
+            reply_markup=kb.show_user_main_menu(msg.from_user.id))
+    await state.finish()
 
 
 @dp.message_handler(Text(ld.main_menu_buttons[0]))

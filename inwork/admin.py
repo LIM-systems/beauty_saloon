@@ -54,7 +54,7 @@ class MasterScheduleAdmin(admin.ModelAdmin):
 class VisitJournalTimeAdmin(admin.ModelAdmin):
     list_display = ('visit_client', 'visit_master', 'date',
                     'visit_service', 'estimation', 'confirmation',
-                    'finish', 'cancel')
+                    'finish', 'cancel', 'description')
     list_filter = ('visit_client', 'visit_master', 'date',
                    'visit_service', 'estimation', 'confirmation',
                    'finish', 'cancel')

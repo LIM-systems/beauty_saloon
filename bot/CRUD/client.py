@@ -97,3 +97,15 @@ def get_client_record(record_id):
             visit.visit_client.phone,
             visit.confirmation,
         )
+
+
+@sync_to_async()
+def get_client_record_with_bad_estimate(tg_id):
+    '''Поиск последней записи клиента с плохой оценкой'''
+    visit = mdl.VisitJournal.objects.filter(
+        visit_client__tg_id=tg_id,
+        cancel=False,
+        finish=True,
+        estimation__lte=3).order_by('-date').first()
+    if visit:
+        return visit.id
