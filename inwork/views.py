@@ -35,8 +35,10 @@ class APISelectServices(APIView):
     def post(self, request):
         '''Вернуть услуги по полученному списку категорий'''
         categories = request.data.get('categories')
+        persons = request.data.get('persons')
         services = md.Service.objects.filter(
-            categories__in=categories).values(
+            categories__in=categories,
+            persons__title__in=persons).values(
                 'id', 'name', 'description', 'price', 'duration')
         if not services:
             return Response(
