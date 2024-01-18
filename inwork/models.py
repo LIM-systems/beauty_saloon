@@ -81,7 +81,8 @@ class Service(models.Model):
     duration = models.IntegerField(
         verbose_name='Длительность выполнения (минут)')
     description = models.TextField(verbose_name='Описание', blank=True)
-    image = models.ImageField(upload_to='services/', verbose_name='Картинка услуги', null=True, blank=True)
+    image = models.ImageField(upload_to='services/', width_field=100, height_field=100,
+                            verbose_name='Картинка услуги', null=True, blank=True)
     price = models.IntegerField(verbose_name='Цена(рублей)')
     persons = models.ManyToManyField(
         to=Person, verbose_name='Персоны',
