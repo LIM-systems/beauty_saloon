@@ -1,5 +1,6 @@
 from django.core.validators import RegexValidator
 from django.db import models
+from PIL import Image
 
 
 class Person(models.Model):
@@ -81,12 +82,27 @@ class Service(models.Model):
     duration = models.IntegerField(
         verbose_name='Длительность выполнения (минут)')
     description = models.TextField(verbose_name='Описание', blank=True)
-    image = models.ImageField(upload_to='services/', width_field=100, height_field=100,
-                            verbose_name='Картинка услуги', null=True, blank=True)
+    image = models.ImageField(upload_to='services/', verbose_name='Картинка услуги', 
+                            null=True, blank=True)
     price = models.IntegerField(verbose_name='Цена(рублей)')
     persons = models.ManyToManyField(
         to=Person, verbose_name='Персоны',
         help_text='Выберите для кого доступна услуга')
+
+    def save(self, *args, **kwargs):
+        '''Редактирование размеров картинки при необходимости'''
+        super().save(*args, **kwargs)
+
+        if self.image:
+            max_width = 512
+            max_height = 512
+            img = Image.open(self.image.path)
+
+            # Проверка размеров и изменение, если необходимо
+            if img.width > max_width or img.height > max_height:
+                new_size = (min(img.width, max_width), min(img.height, max_height))
+                img.thumbnail(new_size)
+                img.save(self.image.path)
 
     class Meta:
         verbose_name = 'Услуга'
