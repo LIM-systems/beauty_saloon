@@ -100,6 +100,7 @@ class APICreateRecords(APIView):
 
     def post(self, request):
         '''Создать запись(и) в журнале'''
+        URL = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage'
         client_tg_id: int = request.data.get('client_tg_id')
         for master in request.data.get('masters'):
             master_id: int = master.get('master_id')
@@ -125,11 +126,25 @@ class APICreateRecords(APIView):
                 )
                 # обновляем переменную продолжительности для расчета следующей услуги
                 duration = service.duration
-        # отправляем уведомление об успешной записи
-        URL = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage'
-        data = {'chat_id': client_tg_id,
-                'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
-        requests.post(URL, data=data)
+
+                # отправляем уведомление об успешной записи мастеру
+                data_master = {
+                    'chat_id': master.name.tg_id,
+                    'parse_mode': 'HTML',
+                    'text': f'''
+        <b>Новая запись на услугу!</b>
+
+        Клиент: <b>{client.name}</b>
+        Услуга: <b>{service.name}</b>
+        Время: <b>{service_start.strftime('%Y-%m-%d %H:%M')}</b>
+        '''}
+                requests.post(URL, data=data_master)
+
+        # отправляем уведомление об успешной записи клиенту
+        data_client = {
+            'chat_id': client_tg_id,
+            'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
+        requests.post(URL, data=data_client)
 
         # если это первая запись клиенту то
         finish_services = md.VisitJournal.objects.filter(

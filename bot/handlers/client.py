@@ -98,7 +98,7 @@ async def get_client_records2(call: types.CallbackQuery):
         message = await message_rec(records)
         await call.message.answer(
             f'<b>Ваши завершенные записи</b>\n{message}',
-            )
+        )
 
 
 @dp.callback_query_handler(Text(startswith='cancel'))
@@ -123,12 +123,16 @@ async def cancel_record(call: types.CallbackQuery):
 async def confirm_cancel_record(call: types.CallbackQuery):
     '''Отмена записи'''
     if ld.yes_no[0] in call.data:
+        text = 'Запись отменена!'
         record_id = call.data.split('/')[1]
         await sqlcom.update_visit_journal(record_id, {'cancel': True})
-        await call.message.edit_text('Запись отменена')
+        await call.message.edit_text(text)
         # сообщение админам
-        adm_text = await utils.alert_admins_msg(record_id, 'Запись отменена')
+        adm_text = await utils.alert_admins_msg(record_id, text)
         await ld.bot.send_message(chat_id=env.CHAT_ADMINS, text=adm_text)
+        # сообщение мастеру об отмене
+        master__tg_id, master_text = await utils.alert_master_msg(record_id, text)
+        await ld.bot.send_message(chat_id=master__tg_id, text=master_text)
     else:
         await call.message.delete()
 
@@ -173,8 +177,8 @@ async def set_comment(msg: types.Message, state: FSMContext):
     if record_id:
         await sqlcom.update_visit_journal(record_id, {'description': msg.text})
     await msg.answer(
-            'Благодарим за оценку! ❤️\nМы обязательно прочитаем ваш отзыв!',
-            reply_markup=kb.show_user_main_menu(msg.from_user.id))
+        'Благодарим за оценку! ❤️\nМы обязательно прочитаем ваш отзыв!',
+        reply_markup=kb.show_user_main_menu(msg.from_user.id))
     await state.finish()
 
 
@@ -250,9 +254,13 @@ async def confirm_record(call: types.CallbackQuery):
         await sqlcom.update_visit_journal(visit_id, {'confirmation': dt.now()})
         await call.message.answer('🙏 Благодарим за подтверждение!')
     if ld.confirm_btn[1] in call.data:
+        text = 'Запись отменена!'
         await call.message.delete()
         await sqlcom.update_visit_journal(visit_id, {'cancel': True})
-        await call.message.answer('Запись отменена')
+        await call.message.answer(text)
         # сообщение админам
-        adm_text = await utils.alert_admins_msg(visit_id, 'Запись отменена')
+        adm_text = await utils.alert_admins_msg(visit_id, text)
         await ld.bot.send_message(chat_id=env.CHAT_ADMINS, text=adm_text)
+        # сообщение мастеру об отмене
+        master__tg_id, master_text = await utils.alert_master_msg(visit_id, text)
+        await ld.bot.send_message(chat_id=master__tg_id, text=master_text)

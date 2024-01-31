@@ -44,6 +44,19 @@ async def alert_admins_msg(visit_id, text):
 {text} </a>
 Клиент: <b>{visit[7]}</b> <code>{visit[8]}</code>
 Мастер: <b>{visit[2]}</b>
-Услуга <b>{visit[3]}</b>
-Время <b>{visit[1]}</b>
+Услуга: <b>{visit[3]}</b>
+Время: <b>{visit[1].strftime('%Y-%m-%d %H:%M')}</b>
 '''
+
+
+async def alert_master_msg(visit_id, text):
+    '''Оповещение мастера'''
+    visit = await sqlc.get_client_record(visit_id)
+    master__tg_id = visit[2].tg_id
+    return (master__tg_id, f'''
+<b>{text}</b>
+
+Клиент: <b>{visit[7]}</b>
+Услуга: <b>{visit[3]}</b>
+Время: <b>{visit[1].strftime('%Y-%m-%d %H:%M')}</b>
+''')
