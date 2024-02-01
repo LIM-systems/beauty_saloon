@@ -206,7 +206,7 @@ class APICreateSchedule(APIView):
                 md.MasterSchedule.objects.update_or_create(
                     master=master,
                     date=selected_date,
-                    defaults={'start_time': '09:00:00', 'end_time': '21:00:00'}
+                    defaults={'start_time': '10:00:00', 'end_time': '21:00:00'}
                 )
 
             # очистка убранных записей
