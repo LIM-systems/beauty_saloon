@@ -10,4 +10,5 @@ urlpatterns = [
     path('create_records', views.APICreateRecords.as_view()),
     path('get_schedules', views.APIMonthMastersShedule.as_view()),
     path('new_schedules', views.APICreateSchedule.as_view()),
+    path('get_masters_work_time', views.APIGetMasterWorkTime.as_view()),
 ]

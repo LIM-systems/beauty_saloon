@@ -102,9 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // получаем инфу о сотрудниках и их графиках через апи запрос
     //для этого отправляем текущий месяц и год
-    const APIUrl = 'https://devsaloon.tw1.su/api/v1/'
+    const APIUrl = 'http://192.168.31.24:8000/api/v1/'
     const getSchedules = `${APIUrl}get_schedules`
     const createNewSchedules = `${APIUrl}new_schedules`
+    const getMastersWorkTimes = `${APIUrl}get_masters_work_time`
     const getSchedule = (month, year) => {
         // удаляем прошлые блоки, если они есть
         const mastersBlocks = document.querySelectorAll('.master-block')
@@ -160,6 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         })
                         masterWeekDay.textContent = item.day
+                        const openWorkTimes = document.createElement('img')
+                        openWorkTimes.classList.add('open-work-times')
+                        openWorkTimes.src = '/static/imgs/openWorkTimes.png'
+                        masterWeekDay.appendChild(openWorkTimes)
                         masterWeekDaysBlock.appendChild(masterWeekDay)
                     })
                 })
@@ -201,12 +206,77 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearValue = e.target.value
         getSchedule(Number(monthValue), Number(yearValue))
     })
-
+    ////////////////////////////////////////////////////////////////
+    // модалка для показа рабочего времени
+    const timeModalWrapper = document.createElement('div')
+    timeModalWrapper.classList.add('time-modal-wrapper')
+    timeModalWrapper.classList.add('hidden-modal-time')
+    modalwrapper.appendChild(timeModalWrapper)
+    const timeModal = document.createElement('div')
+    timeModal.classList.add('time-modal')
+    timeModalWrapper.appendChild(timeModal)
+    const timeModalTop = document.createElement('div')
+    timeModalTop.classList.add('time-modal-top')
+    timeModal.appendChild(timeModalTop)
+    const timeModalMasterName = document.createElement('div')
+    timeModalMasterName.classList.add('time-modal-master-name')
+    timeModalTop.appendChild(timeModalMasterName)
+    timeModalMasterName.textContent = 'Мастер'
+    const timeModalCloseButton = document.createElement('div')
+    timeModalCloseButton.classList.add('time-modal-close-button')
+    timeModalTop.appendChild(timeModalCloseButton)
+    const imgTimeClose = document.createElement('img')
+    imgTimeClose.src = '/static/imgs/closeModal.png'
+    imgTimeClose.classList.add('time-modal-close-button-img')
+    timeModalCloseButton.appendChild(imgTimeClose)
+    const timeModalBottom = document.createElement('div')
+    timeModalBottom.classList.add('time-modal-bottom')
+    timeModal.appendChild(timeModalBottom)
+    timeModalCloseButton.addEventListener('click', () => {
+        timeModalMasterName.textContent = ''
+        timeModalBottom.innerHTML = ''
+        timeModalWrapper.classList.add('hidden-modal-time')
+    })
     // проставляем/удаляем рабочие дни
     modalMiddle.addEventListener('click', e => {
+        // открытие модалки времени
+        if (e.target.classList.contains('open-work-times')) {
+            if (!e.target.closest('.work')) return
+            timeModalWrapper.classList.remove('hidden-modal-time')
+            const masterData = e.target.closest('.master-block')
+            const masterID = masterData.id
+            const selectedYear = yearsSelect.options[yearsSelect.selectedIndex].value
+            const selectedMonth = monthsSelect.options[monthsSelect.selectedIndex].value
+            const selectedDay = e.target.closest('.week-day').textContent
+            const selectedDate = `${selectedYear}-${selectedMonth}-${selectedDay}`
+            fetch(getMastersWorkTimes, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify({
+                    'master_id': masterID,
+                    'work_day_date': selectedDate
+                })
+            }).then(res => res.json())
+                .then(res => {
+                    const masterName = res.master_name
+                    const times = res.work_time
+                    timeModalMasterName.textContent = masterName
+                    times.forEach(item => {
+                        const timeBlock = document.createElement('p')
+                        timeBlock.classList.add('work-time')
+                        timeBlock.textContent = item.time
+                        if (item.busy) timeBlock.classList.add('busy-time')
+                        timeModalBottom.appendChild(timeBlock)
+                    })
+                })
+            return
+        }
+        if (!e.target.classList.contains('master-week-day')) return
         const masterData = e.target.closest('.master-block')
         if (!masterData) return
-        if (!e.target.classList.contains('master-week-day')) return
         const day = e.target
         if (day.classList.contains('work')) {
             day.classList.remove('work')
@@ -214,6 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             day.classList.add('work')
         }
     })
+
     sendButton.addEventListener('click', () => {
         const mastersBlocks = document.querySelectorAll('.master-block')
         const mastersSchedule = []

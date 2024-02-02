@@ -221,3 +221,60 @@ class APICreateSchedule(APIView):
                     entry.delete()
 
         return Response({'status': True}, status=status.HTTP_200_OK)
+
+
+class APIGetMasterWorkTime(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        '''Получить время работы мастера'''
+        master_id: int = request.data.get('master_id')
+        work_day_date: str = request.data.get('work_day_date')
+        work_day_date_start = dt.strptime(work_day_date, '%Y-%m-%d')
+        work_day_date_end = work_day_date_start + td(days=1)
+        work_day_date = dt.strptime(work_day_date, '%Y-%m-%d').date()
+
+        master = md.Master.objects.get(id=master_id)
+        master_schedule =  md.MasterSchedule.objects.filter(
+                    master=master,
+                    date=work_day_date).values('start_time', 'end_time').first()
+        visit_journal_entries = md.VisitJournal.objects.filter(
+            visit_master=master,
+            date__gte=work_day_date_start,
+            date__lt=work_day_date_end,
+            finish=False,
+            cancel=False
+        ).all()
+
+        # создаём список занятого времени
+        busy_times = []
+        for entry in visit_journal_entries:
+            services_duration = sum(entry.visit_service.values_list('duration', flat=True))
+            entry_time = entry.date 
+            busy_times.append(entry_time.strftime('%H:%M'))
+            while services_duration != 30:
+                entry_time += td(minutes=30)
+                services_duration -= 30
+                busy_times.append(entry_time.strftime('%H:%M'))
+        
+        # создаём список всего времени
+        work_time = []
+        times_count = td(hours=master_schedule.get('start_time').hour)
+        while times_count != td(hours=master_schedule.get('end_time').hour):
+            str_time = (dt.min + times_count).time().strftime('%H:%M')
+            if str_time in busy_times:
+                work_time.append({
+                    'time': str_time,
+                    'busy': True
+                })
+            else:
+                work_time.append({
+                    'time': str_time,
+                    'busy': False
+                })
+            times_count += td(hours=0.5)
+        master_name = str(master.name)
+        return Response({
+            'work_time': work_time,
+            'master_name': master_name
+            }, status=status.HTTP_200_OK)

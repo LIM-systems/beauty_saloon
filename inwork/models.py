@@ -41,7 +41,7 @@ class Client(models.Model):
         verbose_name_plural = 'Клиенты'
 
     def __str__(self):
-        return self.name
+        return f'{self.name} {self.phone}'
 
 
 class Master(models.Model):
@@ -135,8 +135,10 @@ class VisitJournal(models.Model):
     visit_master = models.ForeignKey(
         Master, on_delete=models.CASCADE, verbose_name='Мастер')
     date = models.DateTimeField(verbose_name='Дата посещения')
-    visit_service = models.ForeignKey(
-        Service, on_delete=models.CASCADE, verbose_name='Услуга')
+    # visit_service = models.ForeignKey(
+    #     Service, on_delete=models.CASCADE, verbose_name='Услуга')
+    visit_service = models.ManyToManyField(
+        Service, verbose_name='Услуга')
     confirmation = models.DateTimeField(
         verbose_name='Подтверждение', blank=True, null=True)
     cancel = models.BooleanField(default=False, verbose_name='Услуга отменена')
