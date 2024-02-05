@@ -1,4 +1,6 @@
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, ValidationError
+from django.utils.timezone import timedelta
+from django.contrib import messages
 from django.db import models
 from PIL import Image
 
@@ -82,8 +84,8 @@ class Service(models.Model):
     duration = models.IntegerField(
         verbose_name='Длительность выполнения (минут)')
     description = models.TextField(verbose_name='Описание', blank=True)
-    image = models.ImageField(upload_to='services/', verbose_name='Картинка услуги', 
-                            null=True, blank=True)
+    image = models.ImageField(upload_to='services/', verbose_name='Картинка услуги',
+                              null=True, blank=True)
     price = models.IntegerField(verbose_name='Цена(рублей)')
     persons = models.ManyToManyField(
         to=Person, verbose_name='Персоны',
@@ -100,7 +102,8 @@ class Service(models.Model):
 
             # Проверка размеров и изменение, если необходимо
             if img.width > max_width or img.height > max_height:
-                new_size = (min(img.width, max_width), min(img.height, max_height))
+                new_size = (min(img.width, max_width),
+                            min(img.height, max_height))
                 img.thumbnail(new_size)
                 img.save(self.image.path)
 
@@ -154,3 +157,29 @@ class VisitJournal(models.Model):
 
     def __str__(self):
         return f'{self.visit_client} - {self.date}'
+
+#     def save(self, *args, **kwargs):
+#         '''Проверка наложения на другую запись'''
+#         try:
+#             # Сначала сохраняем объект, чтобы ему был присвоен идентификатор
+#             super(VisitJournal, self).save(*args, **kwargs)
+#             # Суммируем продолжительность каждой услуги
+#             all_durations = sum(
+#                 self.visit_service.all().values_list('duration', flat=True))
+#             print(all_durations)
+#             # проверка существования других записей на планируемое время
+#             check_visits = VisitJournal.objects.filter(
+#                 visit_master=self.visit_master,
+#                 date__lt=self.date + timedelta(minutes=all_durations),
+#                 date__gt=self.date - timedelta(minutes=all_durations)
+#             )
+
+#             if check_visits.exists():
+#                 print(f'''
+# Не возможно сохранить запись! Она пересекается с {check_visits}
+# Выберите другое время!
+# ''')
+#                 # удалим транзакцию
+#                 self.delete()
+#         except Exception as e:
+#             print(e)

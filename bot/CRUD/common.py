@@ -29,7 +29,7 @@ def select_open_recors():
             visit.visit_client.name,
             visit.visit_client.tg_id,
             visit.visit_service,
-            visit.visit_service.duration,
+            sum(visit.visit_service.all().values_list('duration', flat=True)),
             visit.visit_service.price,
             visit.confirmation,
             visit.visit_client.phone,
