@@ -31,7 +31,7 @@ def get_master_work_on_date(tg_id, date):
             visit.date,
             visit.visit_client.name,
             visit.visit_service,
-            sum(visit.visit_service.all().values_list('duration', flat=True)),
+            visit.visit_service.duration,
             visit.visit_service.price,
         )
         for visit in visits]

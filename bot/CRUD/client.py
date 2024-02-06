@@ -74,7 +74,7 @@ def select_client_recors(tg_id, finish, cancel=False, limit=10):
             visit.date,
             visit.visit_master.name,
             visit.visit_service,
-            sum(visit.visit_service.all().values_list('duration', flat=True)),
+            visit.visit_service.duration,
             visit.visit_service.price,
             visit.estimation,
         )
@@ -90,7 +90,7 @@ def get_client_record(record_id):
             visit.date,
             visit.visit_master.name,
             visit.visit_service,
-            sum(visit.visit_service.all().values_list('duration', flat=True)),
+            visit.visit_service.duration,
             visit.visit_service.price,
             visit.estimation,
             visit.visit_client.name,
