@@ -101,7 +101,7 @@ class APICreateRecords(APIView):
     def post(self, request):
         '''Создать запись(и) в журнале'''
         URL = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage'
-        client_tg_id: int = request.data.get('client_tg_id')
+        client_id: int = request.data.get('client_id')
         for master in request.data.get('masters'):
             master_id: int = master.get('master_id')
             timestamp: str = master.get('timestamp')
@@ -110,7 +110,7 @@ class APICreateRecords(APIView):
             # переменная для продолжительности предыдущей услуги
             duration = 0
             for num, service_id in enumerate(services):
-                client = md.Client.objects.get(tg_id=client_tg_id)
+                client = md.Client.objects.get(id=client_id)
                 master = md.Master.objects.get(id=master_id)
                 service = md.Service.objects.get(id=service_id)
                 # для первой записи родное время
@@ -142,7 +142,7 @@ class APICreateRecords(APIView):
 
         # отправляем уведомление об успешной записи клиенту
         data_client = {
-            'chat_id': client_tg_id,
+            'chat_id': client_id,
             'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
         requests.post(URL, data=data_client)
 
