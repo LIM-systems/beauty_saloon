@@ -239,7 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     // проставляем/удаляем рабочие дни
     modalMiddle.addEventListener('click', e => {
-        console.log('test')
+        console.log(e.target)
+        console.log(e.target.closest('.week-day'))
         // открытие модалки времени
         if (e.target.classList.contains('open-work-times')) {
             if (!e.target.closest('.work')) return
