@@ -239,12 +239,14 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     // проставляем/удаляем рабочие дни
     modalMiddle.addEventListener('click', e => {
+        console.log('test')
         // открытие модалки времени
         if (e.target.classList.contains('open-work-times')) {
             if (!e.target.closest('.work')) return
             timeModalWrapper.classList.remove('hidden-modal-time')
             const masterData = e.target.closest('.master-block')
             const masterID = masterData.id
+            console.log(masterID)
             const selectedYear = yearsSelect.options[yearsSelect.selectedIndex].value
             const selectedMonth = monthsSelect.options[monthsSelect.selectedIndex].value
             const selectedDay = e.target.closest('.week-day').textContent
