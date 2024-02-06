@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // получаем инфу о сотрудниках и их графиках через апи запрос
     //для этого отправляем текущий месяц и год
+    // const APIUrl = 'http://192.168.31.24:8000/api/v1/'
     const APIUrl = 'https://devsaloon.tw1.su/api/v1/'
     const getSchedules = `${APIUrl}get_schedules`
     const createNewSchedules = `${APIUrl}new_schedules`
@@ -211,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeModalWrapper = document.createElement('div')
     timeModalWrapper.classList.add('time-modal-wrapper')
     timeModalWrapper.classList.add('hidden-modal-time')
-    modalwrapper.appendChild(timeModalWrapper)
+    body.appendChild(timeModalWrapper)
     const timeModal = document.createElement('div')
     timeModal.classList.add('time-modal')
     timeModalWrapper.appendChild(timeModal)
