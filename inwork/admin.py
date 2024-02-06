@@ -16,7 +16,7 @@ class ClientAdmin(admin.ModelAdmin):
 
     @admin.display(description='Телефон')
     def get_webapp_url(self, obj: md.Client):
-        url = f'{env.BASE_URL}sign_up?id={obj.id}'
+        url = f'{env.BASE_URL}sign_up?id={obj.id}&admin=true'
         return format_html(
             '<a href="{}" target="_blank">{}</a>', url, obj.phone)
 
