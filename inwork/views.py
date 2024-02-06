@@ -141,15 +141,20 @@ class APICreateRecords(APIView):
                 requests.post(URL, data=data_master)
 
         # отправляем уведомление об успешной записи клиенту
-        data_client = {
-            'chat_id': client_id,
-            'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
-        requests.post(URL, data=data_client)
+        if client.tg_id:
+            data_client = {
+                'chat_id': client_id,
+                'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
+            requests.post(URL, data=data_client)
 
         # если это первая запись клиенту то
         finish_services = md.VisitJournal.objects.filter(
             visit_client=client, finish=True).count()
         if finish_services < 1:
+            if client.tg_id:
+                used_telegram = f'<b>Позвоните для подтверждения {client.phone}</b>'
+            else:
+                used_telegram = ''
             data = {
                 'chat_id': CHAT_ADMINS,
                 'parse_mode': 'HTML',
@@ -157,7 +162,7 @@ class APICreateRecords(APIView):
 <a href="{BASE_URL}admin/inwork/visitjournal/?visit_client__id__exact={client.id}">
 Клиент {client.name} записан в первый раз.
 </a>
-<b>Позвоните для подтверждения {client.phone}</b>'''}
+{used_telegram}'''}
             requests.post(URL, data=data)
         return Response({'responce': True}, status=status.HTTP_200_OK)
 
