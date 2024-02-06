@@ -11,15 +11,15 @@ from bot.utils import keyboards as kb
 
 @dp.message_handler(commands=['master'])
 async def start_master(msg: types.Message):
-    check_master = await sqlm.check_master(msg.from_user.id)
-    if check_master:
+    master_id, status = await sqlm.check_master(msg.from_user.id)
+    if status:
         await msg.answer(
             'Вы перешли в меню для мастера!',
             reply_markup=kb.menu_keyboard(ld.master_menu_buttons))
     else:
         await msg.answer(
             'Вы не являетесь мастером нашего салона!',
-            reply_markup=kb.show_user_main_menu(msg.from_user.id))
+            reply_markup=kb.show_user_main_menu(master_id))
 
 
 async def message_rec(records):

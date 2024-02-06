@@ -20,7 +20,9 @@ def select_open_recors():
     '''
     visits = mdl.VisitJournal.objects.filter(
         finish=False, cancel=False,
-        ).exclude(visit_client__is_blocked=True)
+        ).exclude(
+            visit_client__is_blocked=True,
+            visit_client__tg_id__isnull=True)
     return [
         (
             visit.id,

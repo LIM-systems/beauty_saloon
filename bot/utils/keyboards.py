@@ -27,7 +27,7 @@ def send_phone(one_time=True):
     return markup
 
 
-def show_user_main_menu(tg_id, row_width=2):
+def show_user_main_menu(client_id, row_width=2):
     '''Сообщение с клавиатурой для зерегистрированных по команде /start'''
     markup = types.ReplyKeyboardMarkup(
         resize_keyboard=True,
@@ -36,7 +36,7 @@ def show_user_main_menu(tg_id, row_width=2):
     sign_up_button = types.KeyboardButton(
         text=ld.main_menu_buttons[1],
         web_app=types.web_app_info.WebAppInfo(
-            url=f'{env.BASE_URL}sign_up?id={tg_id}'))
+            url=f'{env.BASE_URL}sign_up?id={client_id}'))
     my_entries_button = types.KeyboardButton(
         ld.main_menu_buttons[2])
     about_us_button = types.KeyboardButton(

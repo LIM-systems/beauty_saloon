@@ -7,10 +7,13 @@ from inwork import models as mdl
 
 @sync_to_async()
 def check_master(tg_id):
-    '''Проверка, сущетсвования мастера по tg_id'''
+    '''Проверка, существования мастера по tg_id
+    вернуть ID клиента (мастера)'''
     master = mdl.Master.objects.filter(name__tg_id=tg_id).first()
     if master:
-        return True
+        # вернуть ID клиента (мастера)
+        return (master.name.id, True)
+    return (master.name.id, False)
 
 
 @sync_to_async()

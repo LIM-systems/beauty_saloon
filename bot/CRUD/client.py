@@ -8,8 +8,8 @@ def check_for_newbie(tg_id, name):
     '''проверка нового пользователя'''
     client = mdl.Client.objects.filter(tg_id=tg_id).first()
     # если не новый, то записываем его телеграм ID в бд
-    if not client:
-        return True
+    if client:
+        return client.id
     return False
 
 
@@ -22,10 +22,11 @@ def create_or_update_client(tg_id, params):
         check_user = mdl.Client.objects.filter(phone=params.get('phone'))
         if check_user:
             check_user.update(tg_id=tg_id, name=params.get('name'))
-            return 'update_phone'
-    mdl.Client.objects.update_or_create(
+            return (check_user.first().id, 'update_phone')
+    client = mdl.Client.objects.update_or_create(
         tg_id=tg_id, defaults=params
     )
+    return (client[0].id, True)
 
 
 @sync_to_async()
@@ -33,6 +34,7 @@ def get_user_info(tg_id):
     '''Получить данные клиента для профиля'''
     user = mdl.Client.objects.filter(tg_id=tg_id).first()
     return {
+        'id': user.id,
         'name': user.name,
         'phone': user.phone,
     }
@@ -41,7 +43,11 @@ def get_user_info(tg_id):
 @sync_to_async()
 def update_client(tg_id, params):
     '''Обновлении информации о клиенте или создание клиента'''
-    mdl.Client.objects.filter(tg_id=tg_id).update(**params)
+    client = mdl.Client.objects.filter(tg_id=tg_id)
+    if client:
+        print(client.first().id)
+        client.update(**params)
+        return client.first().id
 
 
 @sync_to_async()

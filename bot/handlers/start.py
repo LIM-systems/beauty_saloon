@@ -24,7 +24,7 @@ async def start(msg: types.Message):
         msg.from_user.id,
         msg.from_user.full_name)
     # если клиент новый
-    if newbie:
+    if not newbie:
         await msg.answer(
             texts.welcome,
             disable_web_page_preview=True,
@@ -33,7 +33,7 @@ async def start(msg: types.Message):
     # если клиент существует
     await msg.answer(
         texts.about_bot,
-        reply_markup=kb.show_user_main_menu(msg.from_user.id))
+        reply_markup=kb.show_user_main_menu(newbie))
 
 
 @dp.callback_query_handler(Text(startswith='reg_btn'))
@@ -90,12 +90,12 @@ async def set_phone(msg: types.Message, state: FSMContext):
         await msg.answer('Напишите номер телефона в правильном формате. Например 89001112233')
         return
     data = await state.get_data()
-    upd = await sqlc.create_or_update_client(
+    client_id, status = await sqlc.create_or_update_client(
         msg.from_user.id,
         {'phone': clear_phone, 'name': data.get('name')})
     await msg.answer(
         texts.about_bot,
-        reply_markup=kb.show_user_main_menu(msg.from_user.id))
-    if upd == 'update_phone':
+        reply_markup=kb.show_user_main_menu(client_id))
+    if status == 'update_phone':
         await msg.answer('Вы были зарегистрированы ранее администратором')
     await state.finish()

@@ -58,6 +58,7 @@ async def get_client_records(msg: types.Message):
     '''Выдать записи клиента если есть'''
     tg_id = msg.from_user.id
     records: dict = await sqlc.check_client_recors(tg_id)
+    client: dict = await sqlc.get_user_info(tg_id)
     finish = records.get('finish')
     not_finish = records.get('not_finish')
 
@@ -65,7 +66,7 @@ async def get_client_records(msg: types.Message):
     if not not_finish and not finish:
         await msg.answer(
             '<b>Записи не найдены</b>',
-            reply_markup=kb.show_user_main_menu(tg_id))
+            reply_markup=kb.show_user_main_menu(client.get('id')))
     # есть только будущие записи
     elif not_finish and not finish:
         records = await sqlc.select_client_recors(tg_id, finish=False)
@@ -76,7 +77,7 @@ async def get_client_records(msg: types.Message):
         message = await message_rec(records)
         await msg.answer(
             f'<b>Ваши завершенные записи</b>\n{message}',
-            reply_markup=kb.show_user_main_menu(tg_id))
+            reply_markup=kb.show_user_main_menu(client.get('id')))
     # есть и завершенные и будущие записи
     else:
         await msg.answer(
@@ -176,9 +177,10 @@ async def set_comment(msg: types.Message, state: FSMContext):
     record_id = await sqlc.get_client_record_with_bad_estimate(tg_id)
     if record_id:
         await sqlcom.update_visit_journal(record_id, {'description': msg.text})
+    client: dict = await sqlc.get_user_info(tg_id)
     await msg.answer(
         'Благодарим за оценку! ❤️\nМы обязательно прочитаем ваш отзыв!',
-        reply_markup=kb.show_user_main_menu(msg.from_user.id))
+        reply_markup=kb.show_user_main_menu(client.get('id')))
     await state.finish()
 
 
@@ -238,10 +240,11 @@ async def set_new_phone(msg: types.Message, state: FSMContext):
     if not clear_phone:
         await msg.answer('<b>Напишите номер телефона в правильном формате.</b>\nНапример 89001112233')
         return
-    await sqlc.update_client(msg.from_user.id, {'phone': clear_phone})
+    client_id = await sqlc.update_client(
+        msg.from_user.id, {'phone': clear_phone})
     await state.finish()
     await msg.answer('Телефон изменен',
-                     reply_markup=kb.show_user_main_menu(msg.from_user.id))
+                     reply_markup=kb.show_user_main_menu(client_id))
     await show_profile(msg)
 
 

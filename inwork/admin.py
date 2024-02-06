@@ -1,14 +1,24 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 import inwork.models as md
+import env
 
 
 @admin.register(md.Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone', 'tg_id', 'last_visit', 'is_blocked', 'description')
+    list_display = (
+        'name', 'get_webapp_url', 'tg_id',
+        'last_visit', 'is_blocked', 'description')
     list_filter = ('name', 'phone', 'tg_id',  'last_visit', 'is_blocked')
     readonly_fields = ('last_visit', 'is_blocked')
+
+    @admin.display(description='Телефон')
+    def get_webapp_url(self, obj: md.Client):
+        url = f'{env.BASE_URL}sign_up?id={obj.id}'
+        return format_html(
+            '<a href="{}" target="_blank">{}</a>', url, obj.phone)
 
 
 @admin.register(md.Master)
