@@ -275,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         timeModalBottom.appendChild(timeBlock)
                     })
                 })
+                .catch(err => console.log(err))
             return
         }
         if (!e.target.classList.contains('master-week-day')) return
