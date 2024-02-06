@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // получаем инфу о сотрудниках и их графиках через апи запрос
     //для этого отправляем текущий месяц и год
-    const APIUrl = 'https://devsaloon.tw1.su/api/v1/'
+    const APIUrl = 'http://192.168.31.24:8000/api/v1/'
     const getSchedules = `${APIUrl}get_schedules`
     const createNewSchedules = `${APIUrl}new_schedules`
     const getMastersWorkTimes = `${APIUrl}get_masters_work_time`
@@ -249,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedMonth = monthsSelect.options[monthsSelect.selectedIndex].value
             const selectedDay = e.target.closest('.week-day').textContent
             const selectedDate = `${selectedYear}-${selectedMonth}-${selectedDay}`
+            console.log(selectedDate)
             fetch(getMastersWorkTimes, {
                 method: 'POST',
                 headers: {
