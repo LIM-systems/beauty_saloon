@@ -6,7 +6,6 @@ import env
 if not path.exists('logs'):
     makedirs('logs')
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -96,6 +95,14 @@ STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = path.join(BASE_DIR, 'media/')
 
+brstart = path.join(MEDIA_ROOT, 'broadcasts/start')
+brfinish = path.join(MEDIA_ROOT, 'broadcasts/finish')
+# создадим папки для отчетов по рассылкам если их нет
+if not path.exists(brstart):
+    makedirs(brstart)
+if not path.exists(brfinish):
+    makedirs(brfinish)
+
 # developer
 if DEBUG:
     # STATIC_ROOT = path.join(BASE_DIR, 'static/')
@@ -127,43 +134,45 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 JAZZMIN_SETTINGS = {
 
-    # 'order_with_respect_to': [
-    #     'shedule_app.training',
-    #     'shedule_app.journal',
-    #     'shedule_app.rate',
-    #     'shedule_app.game',
-    #     'shedule_app.team',
-    #     'shedule_app.user',
-    # ],
+    'order_with_respect_to': [
+        'inwork.client',
+        'inwork.master',
+        'inwork.masterschedule',
+        'inwork.visitjournal',
+        'inwork.service',
+        'inwork.categories',
+        'inwork.broadcast',
+    ],
 
     # title of the window (Will default to current_admin_site.site_title if absent or None)
-    # 'site_title': 'ХК "КАТЮША" админка',
+    'site_title': 'Ваниль админка',
 
     # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    # 'site_header': 'ХК "КАТЮША"',
+    'site_header': 'Ваниль',
 
     # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    # 'site_brand': 'ХК "КАТЮША"',
+    'site_brand': 'Ваниль',
 
     # CSS classes that are applied to the logo above
     'site_logo_classes': 'img-circle',
 
     # Welcome text on the login screen
-    # 'welcome_sign': 'Добро пожаловать в админку ХК "КАТЮША"',
+    'welcome_sign': 'Добро пожаловать в админку Ваниль',
 
     # Copyright on the footer
-    # 'copyright': 'ХК "КАТЮША"',
+    'copyright': 'Ваниль',
     # Показать кнопку настройки UI
     'show_ui_builder': True,
 
-    # "icons": {
-    #     'shedule_app.training': "fas fa-stopwatch-20",
-    #     'shedule_app.journal': "fas fa-book",
-    #     'shedule_app.rate': "fas fa-star",
-    #     'shedule_app.game': "fas fa-hockey-puck",
-    #     'shedule_app.team': "fas fa-users",
-    #     'shedule_app.user': "fas fa-user",
-    # },
+    "icons": {
+        'inwork.client': 'fas fas fa-user',
+        'inwork.master': 'fas fa-star',
+        'inwork.masterschedule': 'fas fa-forward',
+        'inwork.visitjournal': 'fas fa-check',
+        'inwork.service': 'fas fa-history',
+        'inwork.categories': 'fas fa-list',
+        'inwork.broadcast': 'fas fa-paper-plane',
+    },
 
 }
 

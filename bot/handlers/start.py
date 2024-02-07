@@ -10,6 +10,20 @@ from bot.utils import texts, utils
 from bot.utils.states import ClientData
 
 
+@dp.message_handler(content_types='video')
+async def get_video_file_id(msg: types.Message):
+    '''Выслать file_id видео если сообщение послано в личку боту'''
+    if msg.chat.type == 'private':
+        await msg.answer(msg.video.file_id)
+
+
+@dp.message_handler(content_types='photo')
+async def get_photo_file_id(msg: types.Message):
+    '''Выслать file_id видео если сообщение послано в личку боту'''
+    if msg.chat.type == 'private':
+        await msg.answer(msg.photo[-1].file_id)
+
+
 @dp.message_handler(Text(ld.main_menu_buttons[3]))
 async def show_about_us(msg: types.Message):
     '''О салоне'''
