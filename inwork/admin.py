@@ -1,8 +1,17 @@
+import asyncio
+from os.path import join, exists
+from datetime import datetime, timedelta
+import csv
+
 from django.contrib import admin
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
 from django.utils.html import format_html
 
-import inwork.models as md
+from bot.CRUD.broadcast import start_test_broadcast
+from inwork import models as md
+from saloon.settings import MEDIA_ROOT, MEDIA_URL
 import env
 
 
@@ -13,12 +22,48 @@ class ClientAdmin(admin.ModelAdmin):
         'last_visit', 'is_blocked', 'description')
     list_filter = ('name', 'phone', 'tg_id',  'last_visit', 'is_blocked')
     readonly_fields = ('last_visit', 'is_blocked')
+    actions = ('export_users_broadcasts',)
 
     @admin.display(description='Телефон')
     def get_webapp_url(self, obj: md.Client):
         url = f'{env.BASE_URL}sign_up?id={obj.id}&admin=true'
         return format_html(
             '<a href="{}" target="_blank">{}</a>', url, obj.phone)
+
+    @admin.action(description='Выгрузка для рассылок')
+    def export_users_broadcasts(self, request, queryset):
+        '''Выгрузка клиентов для рассылки'''
+        path = join(MEDIA_ROOT, 'broadcasts/start')
+        # имя для файла csv
+        filename = datetime.now().strftime('%Y%m%d%H%M')
+        file_path = f'{path}/{filename}.csv'
+        # создаем файл и записываем в него данные
+        with open(file_path, 'w') as csvfile:
+            writer = csv.writer(csvfile)
+            data = []
+            for client in queryset:
+                if client.tg_id:
+                    data.append([client.name, client.tg_id])
+            writer.writerows(data)
+        # создание шаблона рассылки
+        broadcast = md.Broadcast.objects.create(
+            name=f'Новая рассылка {filename} c {len(data)} записями',
+            text='''
+В это поле вставьте текст, можно использовать HTML теги и имя клиента через {name}
+
+{name} - обращение по имени
+<b>Жирный</b>
+<i>Курсив</i>
+<s>Зачёркнутый</s>
+<u>подчеркнутый</u>
+<code>код</code>
+‌<span class="tg-spoiler">Скрытый текст</span>
+<a href="leadconverter.ru">Скрытая ссылка</a>''',
+            send_datetime=datetime.now() - timedelta(minutes=15),
+            filename=filename
+        )
+        # перенаправление на страницу созданной рассылки
+        return HttpResponseRedirect(f'/admin/inwork/broadcast/{broadcast.id}')
 
 
 @admin.register(md.Master)
@@ -70,3 +115,77 @@ class VisitJournalTimeAdmin(admin.ModelAdmin):
                    'finish', 'cancel')
     readonly_fields = ('estimation',)
     ordering = ('-date',)
+
+
+@admin.register(md.Broadcast)
+class BroadcastAdmin(admin.ModelAdmin):
+    list_display = ('name', 'send_datetime', 'download_result_csv')
+    list_filter = ('name', 'send_datetime')
+    list_per_page = 50
+    readonly_fields = ('download_start_csv_details', 'download_result_csv')
+    exclude = ('filename',)
+    change_form_template = 'custom_change_form.html'
+
+    def response_change(self, request, obj: md.Broadcast):
+        '''Кастомизация для тестовой отправки'''
+        save = super().response_change(request, obj)
+        if '_test_broadcast' in request.POST:
+            response = request.POST
+
+            admins = []
+            tg_id = response.get('_tg_id')
+            name = response.get('admins')
+            # соберем отклик если кнопки нажаты
+            if tg_id:
+                admins.append((tg_id, ''))
+            if name == 'Анна':
+                admins.append((761164436, 'Анна Администратор'))
+            elif name == 'Артем':
+                admins.append((317898823, 'Артем Земцов'))
+            try:  # отправка сообщений выбранным админам
+                asyncio.run(start_test_broadcast(obj, admins))
+                for id, name in admins:
+                    self.message_user(request, f'Тест отправлен {name} {id}')
+            except Exception as e:
+                self.message_user(request, f'Ошибка при отправке: {e}', level='error')
+                return save
+        return save
+
+    def response_post_save_change(self, request, obj):
+        '''Обработка после сохранения'''
+        save = super().response_post_save_change(request, obj)
+        if '_test_broadcast' in request.POST:
+            # если нажали Тестовая рассылка
+            return redirect(request.path)
+        return save
+
+    @admin.display(description='Результат')
+    def download_result_csv(self, obj: md.Broadcast):
+        '''Ссылка для скачивания файла с результатом'''
+        path_url = join(MEDIA_URL, 'broadcasts/finish')
+        path_csv = join(MEDIA_ROOT, 'broadcasts/finish')
+        # имя файла с результатом рассылки csv
+        file_path = f'{path_url}/{obj.filename}.csv'
+        link_file = f'{path_csv}/{obj.filename}.csv'
+        if not exists(link_file):
+            # Если файл не существует
+            return format_html('<b style="color:red;">Результат еще не сформирован</b>')
+        return format_html(f'<a href="{env.BASE_URL}{file_path}"><b>Скачать файл</b></a>')
+
+    @admin.display(description='Выборка клиентов для рассылки')
+    def download_start_csv_details(self, obj: md.Broadcast):
+        '''Ссылка для скачивания файла с выборкой при открытии объекта'''
+        path_url = join(MEDIA_URL, 'broadcasts/start')
+        path_csv = join(MEDIA_ROOT, 'broadcasts/start')
+        # имя файла с результатом рассылки csv
+        file_path = f'{path_url}/{obj.filename}.csv'
+        link_file = f'{path_csv}/{obj.filename}.csv'
+        if not exists(link_file):
+            # Если файл не существует
+            return format_html('-')
+        with open(link_file) as csvfile:
+            reader = csv.reader(csvfile)
+            row_count = sum(1 for row in reader)
+        link = f'<a href="{env.BASE_URL}{file_path}"><b>Скачать файл с выборкой ({row_count} клиентов)</b></a>'
+
+        return format_html(link)

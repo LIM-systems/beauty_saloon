@@ -45,7 +45,6 @@ def update_client(tg_id, params):
     '''Обновлении информации о клиенте или создание клиента'''
     client = mdl.Client.objects.filter(tg_id=tg_id)
     if client:
-        print(client.first().id)
         client.update(**params)
         return client.first().id
 

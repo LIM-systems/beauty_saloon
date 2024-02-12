@@ -156,28 +156,42 @@ class VisitJournal(models.Model):
     def __str__(self):
         return f'{self.visit_client} - {self.date}'
 
-#     def save(self, *args, **kwargs):
-#         '''Проверка наложения на другую запись'''
-#         try:
-#             # Сначала сохраняем объект, чтобы ему был присвоен идентификатор
-#             super(VisitJournal, self).save(*args, **kwargs)
-#             # Суммируем продолжительность каждой услуги
-#             all_durations = sum(
-#                 self.visit_service.all().values_list('duration', flat=True))
-#             print(all_durations)
-#             # проверка существования других записей на планируемое время
-#             check_visits = VisitJournal.objects.filter(
-#                 visit_master=self.visit_master,
-#                 date__lt=self.date + timedelta(minutes=all_durations),
-#                 date__gt=self.date - timedelta(minutes=all_durations)
-#             )
 
-#             if check_visits.exists():
-#                 print(f'''
-# Не возможно сохранить запись! Она пересекается с {check_visits}
-# Выберите другое время!
-# ''')
-#                 # удалим транзакцию
-#                 self.delete()
-#         except Exception as e:
-#             print(e)
+class Broadcast(models.Model):
+    name = models.CharField(
+        max_length=255,
+        verbose_name='Название рассылки'
+    )
+    text = models.TextField(
+        verbose_name='Текст сообщения',
+        help_text='В тексте можно использовать HTML теги и вставлять имя клиента {name}'
+    )
+    photo = models.CharField(
+        verbose_name='Фото',
+        help_text='Ссылка на фото, не обязательный параметр',
+        max_length=255,
+        blank=True, null=True
+    )
+    video = models.CharField(
+        verbose_name='Видео',
+        help_text='Ссылка на видео, не обязательный параметр',
+        max_length=3000,
+        blank=True, null=True
+    )
+    send_datetime = models.DateTimeField(
+        verbose_name='Когда отправить',
+        help_text='Указывайте московское время отправки'
+    )
+    filename = models.CharField(
+        max_length=255,
+        verbose_name='Имя файла',
+        help_text='Имя файла csv с выборкой клиентов'
+    )
+
+    class Meta:
+        ordering = ('-send_datetime',)
+        verbose_name = 'Ручные рассылки'
+        verbose_name_plural = 'Ручные рассылки'
+
+    def __str__(self):
+        return f'{self.name}'

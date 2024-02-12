@@ -6,6 +6,7 @@ from aiogram.utils.exceptions import BotBlocked, UserDeactivated
 
 from bot.CRUD import common as sqlcom
 from bot.CRUD import client as sqlc
+from bot.CRUD.broadcast import start_broadcast
 from bot.loader import bot, logger, estimation, confirm_btn
 from bot.utils import keyboards as kb
 
@@ -120,6 +121,7 @@ async def select_records_for_notifications():
 async def scheduler():
     '''Задания планировщика'''
     aioschedule.every(1).minutes.do(select_records_for_notifications)
+    aioschedule.every(1).minutes.do(start_broadcast)  # ручные рассылки
     # aioschedule.every(10).seconds.do(select_records_for_notifications)
     while True:
         await aioschedule.run_pending()
