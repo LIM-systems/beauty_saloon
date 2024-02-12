@@ -9,13 +9,16 @@ import inwork.models as md
 from inwork.utils import find_available_time_for_all_days
 from env import TOKEN, BASE_URL, CHAT_ADMINS
 import requests
+import logging
 
+logger = logging.getLogger('main')
 
 class APIAllCategories(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         '''Получить все категории с учетом персон'''
+        logger.info('test')
         result = {'categories': []}
         persons: list = request.data.get('persons')
         if not persons:
@@ -141,11 +144,10 @@ class APICreateRecords(APIView):
                 requests.post(URL, data=data_master)
 
         # отправляем уведомление об успешной записи клиенту
-        if client.tg_id:
-            data_client = {
-                'chat_id': client_id,
-                'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
-            requests.post(URL, data=data_client)
+        data_client = {
+            'chat_id': client_id,
+            'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
+        requests.post(URL, data=data_client)
 
         # если это первая запись клиенту то
         finish_services = md.VisitJournal.objects.filter(
@@ -254,7 +256,7 @@ class APIGetMasterWorkTime(APIView):
         # создаём список занятого времени
         busy_times = []
         for entry in visit_journal_entries:
-            services_duration = sum(entry.visit_service.values_list('duration', flat=True))
+            services_duration = entry.visit_service.duration
             entry_time = entry.date 
             busy_times.append(entry_time.strftime('%H:%M'))
             while services_duration != 30:

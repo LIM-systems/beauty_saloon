@@ -1,14 +1,17 @@
 from os import makedirs, path
 from pathlib import Path
+import logging
 
 import env
 
-if not path.exists('logs'):
-    makedirs('logs')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+log_dir = path.join(BASE_DIR, 'logs')
+
+if not path.exists('logs'):
+    makedirs('logs')
 
 SECRET_KEY = env.SECRET_KEY
 
@@ -198,4 +201,31 @@ JAZZMIN_UI_TWEAKS = {
         "success": "btn-success"
     },
     "actions_sticky_top": False
+}
+
+
+LOGGING_LEVEL = logging.DEBUG
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'main_format': '{asctime} - {levelname} - {module} - {filename} - {message}',
+        'style': '{',
+    },
+    'handlers': {
+        'file': {
+            # 'level': LOGGING_LEVEL,
+            'class': 'logging.FileHandler',
+            'formatter':'main_format',
+            'filename': path.join(log_dir, 'django.log'),
+        },
+    },
+    'loggers': {
+        'main': {
+            'handlers': ['file'],
+            'level': LOGGING_LEVEL,
+            'propagate': True,
+        },
+    },
 }
