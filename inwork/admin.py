@@ -1,17 +1,18 @@
 import asyncio
-import csv
+from os.path import join, exists
 from datetime import datetime, timedelta
-from os.path import exists, join
+import csv
 
-import env
-from bot.CRUD.broadcast import start_test_broadcast
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html
+
+from bot.CRUD.broadcast import start_test_broadcast
 from inwork import models as md
 from saloon.settings import MEDIA_ROOT, MEDIA_URL
+import env
 
 
 @admin.register(md.Client)
@@ -19,7 +20,8 @@ class ClientAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'gender', 'get_webapp_url', 'tg_id',
         'last_visit', 'is_blocked', 'description')
-    list_filter = ('name', 'gender', 'phone', 'tg_id',  'last_visit', 'is_blocked')
+    list_filter = ('name', 'gender', 'phone', 'tg_id',
+                   'last_visit', 'is_blocked')
     readonly_fields = ('last_visit', 'is_blocked')
     actions = ('export_users_broadcasts',)
 
@@ -146,7 +148,8 @@ class BroadcastAdmin(admin.ModelAdmin):
                 for id, name in admins:
                     self.message_user(request, f'Тест отправлен {name} {id}')
             except Exception as e:
-                self.message_user(request, f'Ошибка при отправке: {e}', level='error')
+                self.message_user(
+                    request, f'Ошибка при отправке: {e}', level='error')
                 return save
         return save
 
