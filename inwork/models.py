@@ -18,6 +18,7 @@ class Person(models.Model):
 
 
 class Client(models.Model):
+    GENDERS = (('m', 'Мужчина'), ('w', 'Женщина'))
     phone_regex = RegexValidator(
         regex=r'^\+7\d{10}$',
         message='Номер должен быть в формате +79001112233')
@@ -25,6 +26,9 @@ class Client(models.Model):
     name = models.CharField(
         max_length=255, verbose_name='Имя',
         help_text='Введите ФИО клиента')
+    gender = models.CharField(
+        max_length=255, verbose_name='Пол',
+        choices=GENDERS, null=True, blank=True)
     phone = models.CharField(
         validators=[phone_regex],
         max_length=12, verbose_name='Телефон',
