@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import inwork.models as md
-from inwork.utils import find_available_time_for_all_days
+from inwork.utils import find_available_time_for_all_days, get_master_schedule,\
+START_WORK_TIME_DEFAULT,END_WORK_TIME_DEFAULT
 from env import TOKEN, BASE_URL, CHAT_ADMINS
 import requests
 import logging
@@ -213,7 +214,7 @@ class APICreateSchedule(APIView):
                 md.MasterSchedule.objects.update_or_create(
                     master=master,
                     date=selected_date,
-                    defaults={'start_time': '10:00:00', 'end_time': '21:00:00'}
+                    defaults={'start_time': START_WORK_TIME_DEFAULT, 'end_time': END_WORK_TIME_DEFAULT}
                 )
 
             # очистка убранных записей
@@ -285,3 +286,45 @@ class APIGetMasterWorkTime(APIView):
             'work_time': work_time,
             'master_name': master_name
             }, status=status.HTTP_200_OK)
+
+
+class APIGetDateEventsForAll(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        '''Получение всех событий всех мастеров на выбранную дату'''
+        date_string: str = request.data.get('date')
+        date: dt = dt.strptime(date_string, '%Y-%m-%d')
+        visits = md.VisitJournal.objects.filter(date__date=date).order_by('date')
+        masters_db = md.Master.objects.all()
+
+        data = {
+            'date': date_string,
+        }
+        masters = []
+        for master in masters_db:
+            master_data = get_master_schedule(master, date, visits)
+            masters.append(master_data)
+        data['masters'] = masters
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class APIGetDateEventsForOne(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        '''Получение всех событий всех мастеров на выбранную дату'''
+        date_string: str = request.data.get('date')
+        master_id = request.data.get('id')
+        date: dt = dt.strptime(date_string, '%Y-%m-%d')
+        visits = md.VisitJournal.objects.filter(date__date=date).order_by('date')
+        master_db = md.Master.objects.filter(id=master_id).first()
+
+
+        master_data = get_master_schedule(master_db, date, visits)
+        masters = [master_data]
+        data = {
+            'date': date_string,
+            'masters': masters
+        }
+        return Response(data, status=status.HTTP_200_OK)

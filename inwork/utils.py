@@ -72,3 +72,43 @@ def find_available_time_for_all_days(master_id, services_id):
         })
 
     return {"schedule": result}
+
+
+START_WORK_TIME_DEFAULT = '10:00:00'
+END_WORK_TIME_DEFAULT = '10:00:00'
+
+
+def get_master_schedule(master, date, visits):
+    name = master.name.name
+    phone = master.name.phone
+    master_date = md.MasterSchedule.objects.filter(date=date).first()
+    if master_date:
+        start_time = master_date.start_time.strftime('%H:%M')
+        end_time = master_date.end_time.strftime('%H:%M')
+    else:
+        start_time = START_WORK_TIME_DEFAULT
+        end_time = END_WORK_TIME_DEFAULT
+    visits_db = visits.filter(visit_master=master).all()
+    visits_list = []
+    for visit in visits_db:
+        client = visit.visit_client.name
+        visit_name = visit.visit_service.name
+        visit_duration = visit.visit_service.duration
+        delta = td(minutes=visit_duration)
+        visit_time_start = visit.date.time()
+        visit_time_end = (dt.combine(dt.today(), visit_time_start) + delta).time()
+        visit_time_start = visit_time_start.strftime('%H:%M')
+        visit_time_end = visit_time_end.strftime('%H:%M')
+        visits_list.append({
+            'client': client,
+            'time_start': visit_time_start,
+            'time_end': visit_time_end,
+            'visit_name': visit_name,
+        })
+    return {
+                'name': name,
+                'phone': phone,
+                'start_time': start_time,
+                'end_time': end_time,
+                'visits': visits_list
+            }

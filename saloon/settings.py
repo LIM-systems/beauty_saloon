@@ -219,8 +219,10 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'main_format': '{asctime} - {levelname} - {module} - {filename} - {message}',
-        'style': '{',
+        'main_format': {
+            'format': '{asctime} - {levelname} - {module} - {filename} - {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'file': {

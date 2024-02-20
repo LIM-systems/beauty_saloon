@@ -11,4 +11,6 @@ urlpatterns = [
     path('get_schedules', views.APIMonthMastersShedule.as_view()),
     path('new_schedules', views.APICreateSchedule.as_view()),
     path('get_masters_work_time', views.APIGetMasterWorkTime.as_view()),
+    path('get_visits_info_all', views.APIGetDateEventsForAll.as_view()),
+    path('get_visits_info_one', views.APIGetDateEventsForOne.as_view()),
 ]

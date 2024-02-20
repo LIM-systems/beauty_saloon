@@ -1,7 +1,7 @@
 .shedule-button {
     background-color: #4CAF50;
     border: none;
-    color: white;
+    color: white !important;
     padding: 9px 62px;
     text-align: center;
     text-decoration: none;
