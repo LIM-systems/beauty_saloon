@@ -18,9 +18,10 @@ import env
 @admin.register(md.Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'get_webapp_url', 'tg_id',
+        'name', 'gender', 'get_webapp_url', 'tg_id',
         'last_visit', 'is_blocked', 'description')
-    list_filter = ('name', 'phone', 'tg_id',  'last_visit', 'is_blocked')
+    list_filter = ('name', 'gender', 'phone', 'tg_id',
+                   'last_visit', 'is_blocked')
     readonly_fields = ('last_visit', 'is_blocked')
     actions = ('export_users_broadcasts',)
 
@@ -147,7 +148,8 @@ class BroadcastAdmin(admin.ModelAdmin):
                 for id, name in admins:
                     self.message_user(request, f'Тест отправлен {name} {id}')
             except Exception as e:
-                self.message_user(request, f'Ошибка при отправке: {e}', level='error')
+                self.message_user(
+                    request, f'Ошибка при отправке: {e}', level='error')
                 return save
         return save
 
