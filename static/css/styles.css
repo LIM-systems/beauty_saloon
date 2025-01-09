@@ -1,0 +1,201 @@
+.shedule-button {
+    background-color: #4CAF50;
+    border: none;
+    color: white !important;
+    padding: 9px 62px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 10px;
+    transition: all 0.5s;
+}
+
+
+.modal-wrapper {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    z-index: 1990;
+    background-color: #fff;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    display: none;
+    white-space: nowrap;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+.modal-wrapper.open {
+    display: block;
+}
+
+.modal-top {
+    width: 100%;
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.close-button {
+    position: absolute;
+    right: 20px;
+    top: 25px;
+    background-color: transparent;
+    border:none;
+}
+
+
+.modal-select {
+    padding: 10px;
+    font-size: 18px;
+    border-radius: 10px;
+}
+
+.modal-middle {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    font-size: 17px;
+    margin-top: 30px;
+}
+
+.week-days-block {
+    display: flex;
+    justify-content: left;
+}
+
+.week-days-block-title {
+    min-width: 250px;
+    text-align: center;
+    border: 1px solid #000;
+    padding: 10px;
+    flex:1;
+}
+
+.week-days {
+    display: flex;
+}
+
+.week-day {
+    border: 1px solid #000;
+    padding: 5px 15px;
+    width: 50px;
+    color: #0000006c;
+    display: flex;
+    flex-direction: column;
+    justify-content:center;
+}
+
+.master-block {
+    display: flex;
+    justify-content: left;
+    background-color: #4caf4f00;
+    transition: all 0.5s;
+}
+
+.master-block:hover {
+    background-color: #4caf4f62;
+    transition: all 0.5s;
+}
+
+.week-day.work {
+    background-color: #4CAF50;
+    color: #fff;
+    transition: all 0.5s;
+}
+
+.master-week-day {
+    cursor: pointer;
+}
+
+
+.bottom-block {
+    margin: 0 auto;
+    margin-top:50px;
+    width: 20%;
+    display: flex;
+    justify-content: center;
+}
+
+.send-button {
+    margin: 0 auto;
+}
+
+.send-button:hover {
+    background-color: #358838;
+    transition: all 0.5s;
+}
+
+.time-modal-wrapper {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100vh;
+    transform: translate(-50%, -50%);
+    z-index: 2000;
+    background-color: #ffffffa8;
+    display: block;
+}
+
+.time-modal-wrapper.hidden-modal-time {
+    display: none;
+}
+
+.time-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px;
+    height: 300px;
+    border-radius: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.time-modal-top {
+    margin-top: 30px;
+}
+
+.time-modal-master-name {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.time-modal-close-button {
+    position: absolute;
+    right: 20px;
+    top: 25px;
+    background-color: transparent;
+    border:none;
+    cursor: pointer;
+}
+
+.time-modal-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 40px;
+}
+
+.work-time {
+    color: green;
+    font-size: 18px;
+
+}
+
+.work-time.busy-time {
+    color: red;
+}
+
+.open-work-times {
+    width: 20px;
+    height: 20px;
+}

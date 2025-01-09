@@ -1,0 +1,30 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    <br><br>
+    <a href="/media/video/create_mailing.mp4" target="_blank">Инструкция по созданию рассылки</a>
+    <br>
+    <a target="_blank" href="https://docs.leadconverter.su/faq/populyarnye-voprosy/telegram/kak-oformit-tekst-v-telegram">Шпаргалка по тегам</a>
+    <br>
+    <div class="d-grid gap-2 d-md-block">
+        <br>
+        <div class="form-group">
+            <label for="_tg_id">Введите telegram ID для теста<br>Либо выберите из списка ниже</label>
+            <input type="text" class="form-control" name="_tg_id" placeholder="Введите telegram ID">
+          </div>
+
+        <form>
+            <div class="form-group">
+              <label for="select_admin">Кому отправим тестовое сообщение?</label>
+              <select id="select_admin" class="selectpicker form-control" name="admins">
+                <option>Выберите</option>
+                <option>Анна</option>
+                <option>Артем</option>
+              </select>
+            </div>
+        </form>
+
+        <input type="submit" class="btn btn-warning" value="Тестовое сообщение" name="_test_broadcast">
+    </div>
+{% endblock %}
