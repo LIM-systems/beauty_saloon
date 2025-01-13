@@ -47,7 +47,7 @@ class APIGetCategories(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class APISelectServices(APIView):
+class APIGetServices(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
