@@ -69,7 +69,7 @@ class APIGetServices(APIView):
         return Response({'services': services_data}, status=status.HTTP_200_OK)
 
 
-class APISelectMasters(APIView):
+class APIGetMasters(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):

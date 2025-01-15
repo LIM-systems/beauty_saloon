@@ -6,7 +6,7 @@ urlpatterns = [
     path('get_csrf_token', views.APICSRFToken.as_view()),
     path('get-categories', views.APIGetCategories.as_view()),
     path('get-services', views.APIGetServices.as_view()),
-    path('select_masters', views.APISelectMasters.as_view()),
+    path('get-masters', views.APIGetMasters.as_view()),
     path('get_master_schedule', views.APIGetMasterSchedule.as_view()),
     path('create_records', views.APICreateRecords.as_view()),
     path('get_schedules', views.APIMonthMastersShedule.as_view()),
