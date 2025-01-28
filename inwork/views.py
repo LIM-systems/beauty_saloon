@@ -15,8 +15,8 @@ from rest_framework.views import APIView
 
 import inwork.models as md
 from inwork.utils import (END_WORK_TIME_DEFAULT, START_WORK_TIME_DEFAULT,
-                          find_available_time_for_all_days,
                           get_master_schedule)
+from inwork.views_utils import find_available_time_for_all_days
 
 logger = logging.getLogger('main')
 
@@ -69,37 +69,6 @@ class APIGetServices(APIView):
         return Response({'services': services_data}, status=status.HTTP_200_OK)
 
 
-# class APIGetMasters(APIView):
-#     permission_classes = [AllowAny]
-
-#     def post(self, request):
-#         '''Получить мастеров по выбранным услугам'''
-#         services = request.data.get('services')
-#         masters = md.Master.objects.filter(
-#             services__in=services).distinct().values(
-#                 'id', 'name__name', 'description', 'services', 'rate')
-#         if not masters:
-#             return Response(
-#                 {'nodata': 'Мастеров по выбранным услугам не найдено'},
-#                 status=status.HTTP_204_NO_CONTENT)
-#         masters_data = {}
-#         for master in masters:
-#             id = master['id']
-#             service = md.Service.objects.filter(
-#                 id=master.get('services')).first()
-#             service = {'name': service.name, 'id': service.id}
-#             if id not in masters_data:
-#                 masters_data[id] = {
-#                     'id': id,
-#                     'name': master['name__name'].split(' - ')[0],
-#                     'rate': master['rate'],
-#                     'description': master['description'],
-#                     'services': [service]
-#                 }
-#             else:
-#                 masters_data[id]['services'].append(service)
-#         result_list = list(masters_data.values())
-#         return Response({'masters': result_list}, status=status.HTTP_200_OK)
 class APIGetMasters(APIView):
     permission_classes = [AllowAny]
 
@@ -138,12 +107,23 @@ class APIGetMasterSchedule(APIView):
         '''Получить свободное время для выбранного мастера на ближайшие дни'''
         master_id: int = request.data.get('master_id')
         service_id: int = request.data.get('service_id')
-        selected_time: str = request.data.get('selected_time')
-        masters_data: list = request.data.get('masters_data')
-        all: bool = request.data.get('all')
         response = find_available_time_for_all_days(
-            master_id, service_id, selected_time, masters_data, all)
+            master_id, service_id)
         return Response(response, status=status.HTTP_200_OK)
+
+# class APIGetMasterSchedule(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         '''Получить свободное время для выбранного мастера на ближайшие дни'''
+#         master_id: int = request.data.get('master_id')
+#         service_id: int = request.data.get('service_id')
+#         selected_time: str = request.data.get('selected_time')
+#         masters_data: list = request.data.get('masters_data')
+#         all: bool = request.data.get('all')
+#         response = find_available_time_for_all_days(
+#             master_id, service_id, selected_time, masters_data, all)
+#         return Response(response, status=status.HTTP_200_OK)
 
 
 class APICreateRecords(APIView):
