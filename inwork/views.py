@@ -88,8 +88,9 @@ class APIGetMasters(APIView):
             masters = md.Master.objects.filter(services=service).values(
                 'id', 'name__name', 'description', 'rate'
             )
+            id = service.id
             services_data[id] = {
-                'id': service.id,
+                'id': id,
                 'name': service.name,
             }
             if masters:
@@ -140,9 +141,6 @@ class APICreateRecords(APIView):
             # сбор данных для уведомления мастеров и админов
             masters_data = []
             masters = request.data.get('masters')
-            logger.info(dt.now())
-            logger.info(client)
-            logger.info(masters)
             for master_item in masters:
                 master_id: int = master_item.get('master_id')
                 service_id: int = master_item.get('service_id')
