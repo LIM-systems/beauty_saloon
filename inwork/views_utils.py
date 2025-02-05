@@ -117,7 +117,7 @@ def get_free_times(**kwargs):
     return available_slots
 
 
-def find_available_time_for_all_days(master_id, service_id):
+def find_available_time_for_all_days(master_id, service_id, selected_date=dt.now().date()):
     '''Расчет времени для всех дней расписания мастера
     :param master_id: айдишник мастера в бд
     :param service_id: айдишник услуги в бд
@@ -129,7 +129,6 @@ def find_available_time_for_all_days(master_id, service_id):
     master = md.Master.objects.filter(id=master_id).first()
     service = md.Service.objects.filter(id=service_id).first()
     service_duration = service.duration
-    selected_date = dt.now().date()
 
     # получаем все рабочие дни от выбранной даты и далее
     schedule_days = md.MasterSchedule.objects.filter(
@@ -140,10 +139,11 @@ def find_available_time_for_all_days(master_id, service_id):
     # достаём всё свободное время из каждого рабочего дня
     master_schedule = []
     for day in schedule_days:
+        start_of_day = dt.combine(day.date, dt.min.time())
+        end_of_day = dt.combine(day.date, dt.max.time())
         existing_visits = md.VisitJournal.objects.filter(
             visit_master=master,
-            date=day.date,
-            finish=False, cancel=False).order_by('date')
+            date__range=(start_of_day, end_of_day)).order_by('date').all()
 
         visits = [(visit.date.time(), visit.visit_service.duration)
                   for visit in existing_visits]
