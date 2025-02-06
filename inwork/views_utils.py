@@ -33,7 +33,6 @@ def edit_start_time(now, start_time):
     else:
         start_time = now.replace(
             hour=hour_now+1, minute=round_for, second=0, microsecond=0)
-
     return start_time
 
 
@@ -110,7 +109,6 @@ def get_free_times(**kwargs):
             # Убедимся, что слот находится в пределах рабочего дня
             if current_time >= work_start_dt and service_end_time <= work_end_dt:
                 available_slots.append(current_time.time())
-
         # Переходим к следующему 15-минутному слоту
         current_time += td(minutes=15)
 
@@ -153,6 +151,7 @@ def find_available_time_for_all_days(master_id, service_id, selected_date=dt.now
                                     work_start=day.start_time,
                                     work_end=day.end_time,
                                     service_duration=service_duration)
+
         master_schedule.append({
             'date': day.date,
             'free_times': free_times

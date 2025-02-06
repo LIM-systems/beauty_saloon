@@ -140,14 +140,7 @@ class APICreateRecords(APIView):
                 service = md.Service.objects.get(id=service_id)
                 date_obj = dt.strptime(day, "%d.%m.%Y").date()
                 time_obj = dt.strptime(time, "%H:%M").time()
-
-                # вычисляем всё нужное время
-                start_datetime = dt.combine(date_obj, time_obj)
-                end_datetime = start_datetime + td(minutes=service.duration)
-                intervals = list(
-                    (start_datetime + td(minutes=15 * i)).time()
-                    for i in range((end_datetime - start_datetime).seconds // 900)
-                )
+                order_datetime = dt.combine(date_obj, time_obj)
 
                 # достаём свободное, что есть по факту
                 available_all_times = find_available_time_for_all_days(
@@ -159,10 +152,9 @@ class APICreateRecords(APIView):
                     date = available_time.get('date')
                     times = available_time.get('free_times')
                     if date_obj == date:
-                        for interval in intervals:
-                            if interval not in times:
-                                all_are_available = False
-                                break
+                        print(time_obj in times)
+                        if time_obj not in times:
+                            all_are_available = False
                         break
 
                 # записываем id услуги в список плохих заказов
@@ -171,18 +163,18 @@ class APICreateRecords(APIView):
                     bad_orders.append(service_id)
                 # создаём запись в бд, если всё ок
                 else:
-                    valid_orders.append((master, service, start_datetime))
-
+                    valid_orders.append((master, service, order_datetime))
+            print(bad_orders)
             if (bad_orders):
                 return Response({'response': bad_orders}, status=status.HTTP_200_OK)
             else:
                 for valid_order in valid_orders:
-                    master, service, start_datetime = valid_order
+                    master, service, order_datetime = valid_order
                     visit = md.VisitJournal.objects.create(
                         visit_client=client,
                         visit_master=master,
                         visit_service=service,
-                        date=start_datetime,
+                        date=order_datetime,
                     )
                     URL = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage'
 
@@ -191,7 +183,7 @@ class APICreateRecords(APIView):
                     text += f'\n\n🟢<b>Мастер: {master.name.name}</b>'
                     text += f'''
 Услуга: <b>{service.name}</b>
-Время: <b>{start_datetime}</b>
+Время: <b>{order_datetime}</b>
 '''
                     text += f'''
 <a href="{BASE_URL}admin/inwork/visitjournal/{visit.id}/change/">Запись в журнале</a>'''
@@ -205,7 +197,7 @@ class APICreateRecords(APIView):
                     text = f'📝<b>Новая запись!</b>\nКлиент: <b>{client.name}</b>\n'
                     text = f'''
 Услуга: <b>{service.name}</b>
-Время: <b>{start_datetime}</b>
+Время: <b>{order_datetime}</b>
 '''
                     data_master = {
                         'chat_id': master.name.tg_id,
