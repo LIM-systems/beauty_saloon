@@ -9,6 +9,7 @@ urlpatterns = [
     path('get-masters', views.APIGetMasters.as_view()),
     path('get-master-schedule', views.APIGetMasterSchedule.as_view()),
     path('create-records', views.APICreateRecords.as_view()),
+    path('in-admin', views.APIAdminCheck.as_view()),
     path('get_schedules', views.APIMonthMastersShedule.as_view()),
     path('new_schedules', views.APICreateSchedule.as_view()),
     path('get_masters_work_time', views.APIGetMasterWorkTime.as_view()),

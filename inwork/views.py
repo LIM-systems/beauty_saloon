@@ -18,6 +18,7 @@ import inwork.models as md
 from inwork.utils import (END_WORK_TIME_DEFAULT, START_WORK_TIME_DEFAULT,
                           get_master_schedule)
 from inwork.views_utils import find_available_time_for_all_days
+from django.contrib.sessions.models import Session
 
 logger = logging.getLogger('main')
 
@@ -215,118 +216,30 @@ class APICreateRecords(APIView):
             logger.info(e)
             return Response({'response': False}, status=status.HTTP_400_BAD_REQUEST)
 
-# class APICreateRecords(APIView):
-#     permission_classes = [AllowAny]
 
-#     def post(self, request):
-#         '''Создать запись(и) в журнале'''
-#         logger.info('Create records')
-#         try:
-#             URL = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage'
-#             client_id: int = request.data.get('client_id')
-#             client = md.Client.objects.get(id=client_id)
+class APIAdminCheck(APIView):
+    permission_classes = []  # Отключаем разрешения, так как мы их не используем
 
-#             # сбор данных для уведомления мастеров и админов
-#             masters_data = []
-#             masters = request.data.get('masters')
-#             for master_item in masters:
-#                 master_id: int = master_item.get('master_id')
-#                 service_id: int = master_item.get('service_id')
-#                 timestamp: str = master_item.get('timestamp')
+    def get(self, request):
+        # Получаем sessionid из cookies
+        session_id_from_react = request.COOKIES.get('sessionid')
 
-#                 master = md.Master.objects.get(id=master_id)
-#                 service = md.Service.objects.get(id=service_id)
-#                 service_date = dt.strptime(timestamp, '%Y-%m-%d %H:%M')
+        if not session_id_from_react:
+            return Response({"error": "No session ID in cookies"}, status=200)
 
-#                 entry, was_create = md.VisitJournal.objects.get_or_create(
-#                     visit_client=client,
-#                     visit_master=master,
-#                     visit_service=service,
-#                     date=service_date,
-#                 )
+        try:
+            # Проверяем, существует ли сессия с таким sessionid
+            session = Session.objects.get(session_key=session_id_from_react)
+            session_data = session.get_decoded()
 
-#                 logger.info(was_create)
-#                 if was_create:
-#                     logger.info(entry.id)
-#                     logger.info(entry)
-#                     if len(masters_data) > 0:
-#                         is_exists = False
-#                         for data in masters_data:
-#                             if data['master_tg_id'] == master.name.tg_id:
-#                                 data['services'].append(service.name)
-#                                 data['timestamps'].append(timestamp)
-#                                 data['entries'].append(entry)
-#                                 is_exists = True
-#                                 break
-#                         if not is_exists:
-#                             masters_data.append({
-#                                 'master_tg_id': master.name.tg_id,
-#                                 'master_name': master.name.name,
-#                                 'services': [service.name],
-#                                 'timestamps': [timestamp],
-#                                 'entries': [entry]
-#                             })
-#                     else:
-#                         masters_data.append({
-#                             'master_tg_id': master.name.tg_id,
-#                             'master_name': master.name.name,
-#                             'services': [service.name],
-#                             'timestamps': [timestamp],
-#                             'entries': [entry]
-#                         })
-#             title = f'📝<b>Новая запись!</b>\nКлиент: <b>{client.name}</b>\n'
-#             admin_text = title
-#             for master_data_item in masters_data:
-#                 master_tg_id = master_data_item.get('master_tg_id')
-#                 master_name = master_data_item.get('master_name')
-#                 data_services = master_data_item.get('services')
-#                 data_timestamps = master_data_item.get('timestamps')
-#                 data_entries = master_data_item.get('entries')
-#                 master_text = title
-#                 admin_text += f'\n\n🟢<b>Мастер: {master_name}</b>'
-#                 for i, service_item in enumerate(data_services):
-#                     data_timestamp = data_timestamps[i]
-#                     data_entry = data_entries[i]
-#                     text = f'''
-#     Услуга: <b>{service_item}</b>
-#     Время: <b>{data_timestamp}</b>
-#     '''
-#                     master_text += text
-#                     admin_text += f'''
-#     {text}<a href="{BASE_URL}admin/inwork/visitjournal/{data_entry.id}/change/">Запись в журнале</a>'''
+            # Если в сессии есть '_auth_user_id', значит пользователь авторизован
+            if '_auth_user_id' in session_data:
+                return Response({'is_authenticated': True}, status=200)
+            else:
+                return Response({"is_authenticated": False}, status=200)
 
-#                 # отправляем уведомление об успешной записи мастеру
-#                 data_master = {
-#                     'chat_id': master_tg_id,
-#                     'parse_mode': 'HTML',
-#                     'text': master_text}
-#                 requests.post(URL, data=data_master)
-#             # if client.id == 337:
-#             #     logger.info('Админам')
-#             #     logger.info(admin_text)
-#             #     return Response({'responce': True}, status=status.HTTP_200_OK)
-#             # отправляем уведомление об успешной записи клиенту
-#             data_client = {
-#                 'chat_id': client.tg_id,
-#                 'text': 'Ваша запись успешно выполнена. Вы можете найти все свои записи в разделе "Мои записи"'}
-#             requests.post(URL, data=data_client)
-
-#             # отправляем уведомление в чат админов
-#             if client.tg_id:
-#                 admin_text += f'\n\nТелефон клиента: {client.phone}'
-#                 finish_services = md.VisitJournal.objects.filter(
-#                     visit_client=client, finish=True).count()
-#                 if finish_services < 1:
-#                     admin_text += '\nКлиент записан в первый раз.'
-#                 data = {
-#                     'chat_id': CHAT_ADMINS,
-#                     'parse_mode': 'HTML',
-#                     'text': admin_text}
-#                 requests.post(URL, data=data)
-#             return Response({'responce': True}, status=status.HTTP_200_OK)
-#         except Exception as e:
-#             logger.info(e)
-#             return Response({'responce': False}, status=status.HTTP_400_BAD_REQUEST)
+        except Session.DoesNotExist:
+            return Response({"error": "Session not found"}, status=200)
 
 
 # Для админки

@@ -67,9 +67,13 @@ CORS_ALLOWED_ORIGINS = env.CORS_ALLOWED_ORIGINS
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
-CSRF_USE_SESSIONS = False
+# Разрешает куки передаваться между разными доменами
+SESSION_COOKIE_SAMESITE = 'None'
+# Использование secure cookies (только через HTTPS)
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'    # Для CSRF токенов тоже
+CSRF_COOKIE_SECURE = True        # Для безопасности CSRF токенов
+CSRF_USE_SESSIONS = True
 
 
 MIDDLEWARE = [
