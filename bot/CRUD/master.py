@@ -1,6 +1,7 @@
 from asgiref.sync import sync_to_async
 from django.db.models import Min
 from django.db.models.functions import TruncDate
+from datetime import date
 
 from inwork import models as mdl
 
@@ -13,7 +14,7 @@ def check_master(tg_id):
     if master:
         # вернуть ID клиента (мастера)
         return (master.name.id, True)
-    return (master.name.id, False)
+    return (master, False)
 
 
 @sync_to_async()
@@ -44,15 +45,21 @@ def get_master_work_on_date(tg_id, date):
 @sync_to_async()
 def get_dates_master_records(tg_id):
     '''Получить даты с открытыми записями мастера'''
+    today = date.today()
     visits = mdl.VisitJournal.objects.annotate(
-        onlydate=TruncDate('date')).filter(
+        onlydate=TruncDate('date')  # Обрезаем время, оставляем только дату
+    ).filter(
         finish=False,
+        onlydate__gte=today,  # Показываем визиты с сегодняшней даты
         visit_master__name__tg_id=tg_id
-    ).values('onlydate').annotate(
-        min_date=Min('onlydate')).values_list(
-        'min_date', flat=True)
+    ).values('onlydate').distinct().order_by('-onlydate')  # Уникальные только даты
 
     if not visits:
         return False
+
+    # Получаем минимальную дату по уникальным дням
+    visits = visits.annotate(
+        min_date=Min('onlydate')
+    ).values_list('min_date', flat=True)
 
     return [visit.strftime('%d-%m-%Y') for visit in visits]

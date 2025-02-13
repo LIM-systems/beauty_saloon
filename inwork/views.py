@@ -196,7 +196,7 @@ class APICreateRecords(APIView):
 
                     # отправка уведомления в чат мастера
                     text = f'📝<b>Новая запись!</b>\nКлиент: <b>{client.name}</b>\n'
-                    text = f'''
+                    text += f'''
 Услуга: <b>{service.name}</b>
 Время: <b>{order_datetime}</b>
 '''
@@ -218,7 +218,7 @@ class APICreateRecords(APIView):
 
 
 class APIAdminCheck(APIView):
-    permission_classes = []  # Отключаем разрешения, так как мы их не используем
+    permission_classes = []
 
     def get(self, request):
         # Получаем sessionid из cookies
