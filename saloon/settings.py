@@ -57,7 +57,7 @@ SESSION_COOKIE_SECURE = True
 # SESSION_COOKIE_SAMESITE = 'None'
 
 
-CSRF_TRUSTED_ORIGINS = [BASE_URL]
+# CSRF_TRUSTED_ORIGINS = [BASE_URL]
 
 
 # prod
@@ -71,9 +71,9 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = 'None'
 # Использование secure cookies (только через HTTPS)
 SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'    # Для CSRF токенов тоже
-CSRF_COOKIE_SECURE = True        # Для безопасности CSRF токенов
-CSRF_USE_SESSIONS = True
+# CSRF_COOKIE_SAMESITE = 'None'    # Для CSRF токенов тоже
+# CSRF_COOKIE_SECURE = True        # Для безопасности CSRF токенов
+# CSRF_USE_SESSIONS = True
 
 
 MIDDLEWARE = [
