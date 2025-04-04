@@ -262,23 +262,23 @@ async def confirm_record(call: types.CallbackQuery):
 
 @dp.message_handler(Text(ld.main_menu_buttons[4]))
 async def get_certificates_handler(msg: types.Message):
-    await msg.answer('Скоро Вы сможете купить здесь сертификаты.')
-    # certificates = await sqlcom.get_certificates()
-    # message = 'Сертификаты на выбор:\n\n'
-    # keyboard = types.InlineKeyboardMarkup()
-    # buttons = []
+    # await msg.answer('Скоро Вы сможете купить здесь сертификаты.')
+    certificates = await sqlcom.get_certificates()
+    message = 'Сертификаты на выбор:\n\n'
+    keyboard = types.InlineKeyboardMarkup()
+    buttons = []
 
-    # for i, certificate in enumerate(certificates):
-    #     index = i+1
-    #     message += f'{index}) {certificate.price}р - {certificate.name}\n'
-    #     buttons.append(types.InlineKeyboardButton(
-    #         index, callback_data=f'certificate_button_{certificate.id}'))
-    #     if index == len(certificates) or index == 5:
-    #         keyboard.row(*buttons)
-    #         buttons = []
-    # message += '\nВыберите порядковый номер сертификата'
+    for i, certificate in enumerate(certificates):
+        index = i+1
+        message += f'{index}) {certificate.price}р - {certificate.name}\n'
+        buttons.append(types.InlineKeyboardButton(
+            index, callback_data=f'certificate_button_{certificate.id}'))
+        if index == len(certificates) or index == 5:
+            keyboard.row(*buttons)
+            buttons = []
+    message += '\nВыберите порядковый номер сертификата'
 
-    # await msg.answer(message, reply_markup=keyboard)
+    await msg.answer(message, reply_markup=keyboard)
 
 
 # выслать инвойс на покупку сертификата
