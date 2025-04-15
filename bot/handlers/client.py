@@ -288,34 +288,31 @@ async def select_certificate(call: types.CallbackQuery):
     certificate = await sqlcom.get_certificate(id)
     await call.message.delete()
     price = types.LabeledPrice(
-        label=certificate.name, amount=int(certificate.price * 100))
-    print(f"LabeledPrice: {certificate.price * 100} копеек")
-    print(f"Receipt amount: {certificate.price:.2f} рублей")
-
+        label=certificate.name, amount=certificate.price * 100)
     provider_data = json.dumps({
         'receipt': {
             'items': [{
                 'description': f'{certificate.name}',
                 'quantity': '1.00',
                 'amount': {
-                    'value': f"{certificate.price:.2f}",
+                    'value': f'{certificate.price}.00',
                     'currency': 'RUB'
                 },
+                'vat_code': None
             }]
         }
     })
-    print(provider_data)
     await bot.send_invoice(call.from_user.id,
                            title=f'Покупка {certificate.name}',
                            description=f'{certificate.description}',
                            provider_token=env.PAYMENT_TOKEN,
-                           #    start_parameter="time-machine-example",
+                           start_parameter="time-machine-example",
                            prices=[price],
                            currency='RUB',
                            need_email=True,
                            send_email_to_provider=True,
                            payload=f'{certificate.id}',
-                           #    provider_data=provider_data
+                           provider_data=provider_data
                            )
 
 
