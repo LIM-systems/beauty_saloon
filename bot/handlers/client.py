@@ -311,10 +311,10 @@ async def select_certificate(call: types.CallbackQuery):
                            provider_token=env.PAYMENT_TOKEN,
                            prices=[price],
                            currency='RUB',
-                           need_email=True,
-                           send_email_to_provider=True,
+                           #    need_email=True,
+                           #    send_email_to_provider=True,
                            payload=f'{certificate.id}',
-                           provider_data=provider_data
+                           #    provider_data=provider_data
                            )
 
 
