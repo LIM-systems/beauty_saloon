@@ -298,7 +298,9 @@ async def select_certificate(call: types.CallbackQuery):
                     'value': f'{certificate.price}.00',
                     'currency': 'RUB'
                 },
-                'vat_code': None
+                'vat_code': None,
+                "payment_mode": "full_payment",
+                "payment_subject": "service"
             }]
         }
     })
