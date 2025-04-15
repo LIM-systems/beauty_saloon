@@ -288,8 +288,10 @@ async def select_certificate(call: types.CallbackQuery):
     certificate = await sqlcom.get_certificate(id)
     await call.message.delete()
     price = types.LabeledPrice(
-        label=certificate.name, amount=certificate.price * 100)
-    print(certificate.price)
+        label=certificate.name, amount=int(certificate.price * 100))
+    print(f"LabeledPrice: {certificate.price * 100} копеек")
+    print(f"Receipt amount: {certificate.price:.2f} рублей")
+
     provider_data = json.dumps({
         'receipt': {
             'items': [{
