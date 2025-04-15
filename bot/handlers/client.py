@@ -321,6 +321,7 @@ async def select_certificate(call: types.CallbackQuery):
 # обработка оплаты
 @dp.pre_checkout_query_handler()
 async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
+    print(pre_checkout_q)
     await bot.answer_pre_checkout_query(pre_checkout_q.id, ok=True)
 
 
