@@ -289,6 +289,7 @@ async def select_certificate(call: types.CallbackQuery):
     await call.message.delete()
     price = types.LabeledPrice(
         label=certificate.name, amount=certificate.price * 100)
+    print(certificate.price)
     provider_data = json.dumps({
         'receipt': {
             'items': [{
@@ -302,6 +303,7 @@ async def select_certificate(call: types.CallbackQuery):
             }]
         }
     })
+    print(provider_data)
     await bot.send_invoice(call.from_user.id,
                            title=f'Покупка {certificate.name}',
                            description=f'{certificate.description}',
