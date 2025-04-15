@@ -314,7 +314,7 @@ async def select_certificate(call: types.CallbackQuery):
                            #    need_email=True,
                            #    send_email_to_provider=True,
                            payload=f'{certificate.id}',
-                           #    provider_data=provider_data
+                           provider_data=provider_data
                            )
 
 
