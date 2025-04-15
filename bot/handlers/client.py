@@ -296,7 +296,7 @@ async def select_certificate(call: types.CallbackQuery):
                 'description': f'{certificate.name}',
                 'quantity': '1.00',
                 'amount': {
-                    'value': price,
+                    'value': f"{certificate.price:.2f}",
                     'currency': 'RUB'
                 },
                 'vat_code': 1
