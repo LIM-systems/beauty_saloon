@@ -310,7 +310,7 @@ async def select_certificate(call: types.CallbackQuery):
                            title=f'Покупка {certificate.name}',
                            description=f'{certificate.description}',
                            provider_token=env.PAYMENT_TOKEN,
-                           start_parameter="time-machine-example",
+                           #    start_parameter="time-machine-example",
                            prices=[price],
                            currency='RUB',
                            need_email=True,
