@@ -295,12 +295,12 @@ async def select_certificate(call: types.CallbackQuery):
                 'description': f'{certificate.name}',
                 'quantity': '1.00',
                 'amount': {
-                    'value': certificate.price,
+                    'value': f'{certificate.price}.00',
                     'currency': 'RUB'
                 },
-                'vat_code': None,
+                'vat_code': 1,
                 "payment_mode": "full_payment",
-                "payment_subject": "service"
+                "payment_subject": "commodity"
             }]
         }
     })
@@ -311,8 +311,8 @@ async def select_certificate(call: types.CallbackQuery):
                            provider_token=env.PAYMENT_TOKEN,
                            prices=[price],
                            currency='RUB',
-                           #    need_email=True,
-                           #    send_email_to_provider=True,
+                           need_email=True,
+                           send_email_to_provider=True,
                            payload=f'{certificate.id}',
                            provider_data=provider_data
                            )
@@ -321,7 +321,6 @@ async def select_certificate(call: types.CallbackQuery):
 # обработка оплаты
 @dp.pre_checkout_query_handler()
 async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
-    print(pre_checkout_q)
     await bot.answer_pre_checkout_query(pre_checkout_q.id, ok=True)
 
 
