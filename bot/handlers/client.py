@@ -307,6 +307,7 @@ async def select_certificate(call: types.CallbackQuery):
     await bot.send_invoice(call.from_user.id,
                            title=f'Покупка {certificate.name}',
                            description=f'{certificate.description}',
+                           start_parameter='start_parameter',
                            provider_token=env.PAYMENT_TOKEN,
                            prices=[price],
                            currency='RUB',
