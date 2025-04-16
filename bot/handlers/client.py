@@ -373,7 +373,7 @@ async def successful_payment(msg: types.Message):
 '''
     await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
 
-    client_text = f'Сертификат {certificate.name} на сумму {certificate.price}р приобретён!'
+    client_text = f'{certificate.name} приобретён!'
     if certificate.image and certificate.image.path:
         with open(certificate.image.path, 'rb') as photo:
             await msg.answer_photo(photo, caption=client_text)
@@ -381,21 +381,21 @@ async def successful_payment(msg: types.Message):
         await msg.answer(client_text)
 
 
-@dp.message_handler(commands=['test'])
-async def successful_payment(msg: types.Message):
-    certificate = await sqlcom.get_certificate(4)
-    client_text = f'Сертификат {certificate.name} на сумму {certificate.price}р приобретён!'
-    if certificate.image and certificate.image.path:
-        with open(certificate.image.path, 'rb') as photo:
-            await msg.answer_photo(photo, caption=client_text)
-    else:
-        await msg.answer(client_text)
+# @dp.message_handler(commands=['test'])
+# async def successful_payment(msg: types.Message):
+#     certificate = await sqlcom.get_certificate(4)
+#     client_text = f'{certificate.name} приобретён!'
+#     if certificate.image and certificate.image.path:
+#         with open(certificate.image.path, 'rb') as photo:
+#             await msg.answer_photo(photo, caption=client_text)
+#     else:
+#         await msg.answer(client_text)
 
-    message = f'''🔔
-Покупка сертификата:
-Клиент: Василий
-Сертификат: Тестовый
-Цена: 100
-<a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
-'''
-    await bot.send_message(chat_id=msg.from_user.id, text=message)
+#     message = f'''🔔
+# Покупка сертификата:
+# Клиент: Василий
+# Сертификат: Тестовый
+# Цена: 100
+# <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
+# '''
+#     await bot.send_message(chat_id=msg.from_user.id, text=message)
