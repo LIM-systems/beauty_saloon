@@ -372,16 +372,24 @@ async def successful_payment(msg: types.Message):
 <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/{new_entry.id}/change/">Запись в журнале покупок</a>
 '''
     await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
-    await msg.answer('Оплата прошла успешно! Ожидайте, с Вами свяжется администратор.')
-    await send_mail(email, client, certificate)
+
+    client_text = f'Сертификат {certificate.name} на сумму {certificate.price}р приобретён!'
+    if certificate.image and certificate.image.path:
+        with open(certificate.image.path, 'rb') as photo:
+            await msg.answer_photo(photo, caption=client_text)
+    else:
+        await msg.answer(client_text)
 
 
 @dp.message_handler(commands=['test'])
 async def successful_payment(msg: types.Message):
-    certificate = await sqlcom.get_certificate(5)
+    certificate = await sqlcom.get_certificate(4)
+    client_text = f'Сертификат {certificate.name} на сумму {certificate.price}р приобретён!'
     if certificate.image and certificate.image.path:
         with open(certificate.image.path, 'rb') as photo:
-            await msg.answer_photo(photo, caption="Сертификат приобретён")
+            await msg.answer_photo(photo, caption=client_text)
+    else:
+        await msg.answer(client_text)
 
     message = f'''🔔
 Покупка сертификата:
