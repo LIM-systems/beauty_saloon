@@ -378,7 +378,7 @@ async def successful_payment(msg: types.Message):
 
 @dp.message_handler(commands=['test'])
 async def successful_payment(msg: types.Message):
-    certificate = await sqlcom.get_certificate(1)
+    certificate = await sqlcom.get_certificate(5)
     if certificate.image and certificate.image.path:
         with open(certificate.image.path, 'rb') as photo:
             await msg.answer_photo(photo, caption="Сертификат приобретён")
