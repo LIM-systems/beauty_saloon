@@ -239,7 +239,7 @@ class ShoppingJournal(models.Model):
     client = models.ForeignKey(
         Client, on_delete=models.CASCADE, verbose_name='Клиент')
     certificate = models.ForeignKey(
-        Сertificate, on_delete=models.CASCADE, verbose_name='Сертификат')
+        Certificate, on_delete=models.CASCADE, verbose_name='Сертификат')
     email = models.CharField(max_length=255, verbose_name='Email')
     date_time = models.DateTimeField(auto_now_add=True)
 
