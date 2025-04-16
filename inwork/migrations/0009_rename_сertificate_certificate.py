@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('inwork', '0008_сertificate_image'),
+        ('inwork', '0008_certificate_image'),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='Сertificate',
+            old_name='Certificate',
             new_name='Certificate',
         ),
     ]
