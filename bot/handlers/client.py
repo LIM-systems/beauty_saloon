@@ -364,7 +364,8 @@ async def successful_payment(msg: types.Message):
     client = shopping_entry.get('client')
     certificate = shopping_entry.get('certificate')
     new_entry = shopping_entry.get('new_entry')
-    message = f'''Покупка сертификата:
+    message = f'''🔔
+Покупка сертификата:
 Клиент: {client}
 Сертификат: {certificate.name}
 Цена: {certificate.price}
@@ -377,10 +378,15 @@ async def successful_payment(msg: types.Message):
 
 @dp.message_handler(commands=['test'])
 async def successful_payment(msg: types.Message):
-    message = f'''Покупка сертификата:
+    certificate = sqlcom.get_certificate(1)
+    with open(certificate.image, 'rb') as photo:
+        await msg.answer_photo(photo, caption=f"Сертификат приобретён")
+
+    message = f'''🔔
+Покупка сертификата:
 Клиент: Василий
 Сертификат: Тестовый
 Цена: 100
 <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
 '''
-    await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
+    await bot.send_message(chat_id=7334449712, text=message)

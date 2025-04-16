@@ -224,6 +224,8 @@ class Сertificate(models.Model):
         verbose_name='Цена',
         help_text='Введите цену сертификата в рублях'
     )
+    image = models.ImageField(upload_to='certificates/', verbose_name='Изображение сертификата',
+                              null=True, blank=True)
 
     class Meta:
         verbose_name = 'Сертификат'
