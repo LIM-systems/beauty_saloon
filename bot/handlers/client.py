@@ -328,10 +328,9 @@ async def send_mail(email, client, certificate):
     sender_email = env.EMAIL_USER
     receiver_email = email
     subject = f'Покупка сертификата. {client.name}'
-    body = f'''Данные покупки:
+    body = f'''Данные о покупке:
 
 Клиент - {client.name}
-Email клиента - {email}
 Сертификат - {certificate.name}
 Цена - {certificate.price}
     '''
@@ -364,5 +363,24 @@ async def successful_payment(msg: types.Message):
     shopping_entry = await sqlcom.set_shopping_entry(msg.from_user.id, id, email)
     client = shopping_entry.get('client')
     certificate = shopping_entry.get('certificate')
+    new_entry = shopping_entry.get('new_entry')
+    message = f'''Покупка сертификата:
+Клиент: {client}
+Сертификат: {certificate.name}
+Цена: {certificate.price}
+<a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/{new_entry.id}/change/">Запись в журнале покупок</a>
+'''
+    await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
     await msg.answer('Оплата прошла успешно! Ожидайте, с Вами свяжется администратор.')
     await send_mail(email, client, certificate)
+
+
+@dp.message_handler(commands=['test'])
+async def successful_payment(msg: types.Message):
+    message = f'''Покупка сертификата:
+Клиент: Василий
+Сертификат: Тестовый
+Цена: 100
+<a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
+'''
+    await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
