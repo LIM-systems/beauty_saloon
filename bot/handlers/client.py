@@ -390,4 +390,4 @@ async def successful_payment(msg: types.Message):
 Цена: 100
 <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
 '''
-    await bot.send_message(chat_id=7334449712, text=message)
+    await bot.send_message(chat_id=msg.from_user.id, text=message)
