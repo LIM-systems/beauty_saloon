@@ -275,7 +275,7 @@ class BroadcastAdmin(admin.ModelAdmin):
         return format_html(link)
 
 
-@admin.register(md.Сertificate)
+@admin.register(md.Certificate)
 class СertificateAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'price')
     list_filter = ('name', 'description', 'price')

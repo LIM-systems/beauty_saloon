@@ -212,7 +212,7 @@ class Broadcast(models.Model):
         return f'{self.name}'
 
 
-class Сertificate(models.Model):
+class Certificate(models.Model):
     name = models.CharField(
         max_length=255,
         verbose_name='Название сертификата'

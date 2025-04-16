@@ -49,14 +49,14 @@ def select_open_recors():
 @sync_to_async()
 def get_certificates():
     '''Получить сертификаты'''
-    certificates = mdl.Сertificate.objects.all()
+    certificates = mdl.Certificate.objects.all()
     return [certificate for certificate in certificates]
 
 
 @sync_to_async()
 def get_certificate(id):
     '''Получить сертификаты'''
-    certificate = mdl.Сertificate.objects.filter(id=id).first()
+    certificate = mdl.Certificate.objects.filter(id=id).first()
     return certificate
 
 
@@ -64,7 +64,7 @@ def get_certificate(id):
 def set_shopping_entry(tg_id, certificate_id, email):
     '''Запись в журнале покупок'''
     client = mdl.Client.objects.filter(tg_id=tg_id).first()
-    certificate = mdl.Сertificate.objects.filter(id=certificate_id).first()
+    certificate = mdl.Certificate.objects.filter(id=certificate_id).first()
     new_entry = mdl.ShoppingJournal.objects.create(
         client=client, certificate=certificate, email=email)
 
