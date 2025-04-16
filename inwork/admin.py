@@ -276,7 +276,7 @@ class BroadcastAdmin(admin.ModelAdmin):
 
 
 @admin.register(md.Certificate)
-class СertificateAdmin(admin.ModelAdmin):
+class CertificateAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'price')
     list_filter = ('name', 'description', 'price')
 
