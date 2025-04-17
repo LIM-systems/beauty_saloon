@@ -283,5 +283,5 @@ class CertificateAdmin(admin.ModelAdmin):
 
 @admin.register(md.ShoppingJournal)
 class ShoppingJournalAdmin(admin.ModelAdmin):
-    list_display = ('client', 'client_cert', 'email', 'date_time')
-    list_filter = ('client', 'client_cert', 'email', 'date_time')
+    list_display = ('client', 'client_cert', 'email', 'date_time', 'cert_uid')
+    list_filter = ('client', 'client_cert', 'email', 'date_time', 'cert_uid')
