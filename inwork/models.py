@@ -243,6 +243,7 @@ class ShoppingJournal(models.Model):
         default=uuid.uuid4, editable=False, unique=True)
     client_cert = models.ForeignKey(
         Certificate, on_delete=models.CASCADE, verbose_name='Сертификат')
+    test = models.TextField(blank=True, null=True)
     email = models.CharField(max_length=255, verbose_name='Email')
     date_time = models.DateTimeField(auto_now_add=True)
 
