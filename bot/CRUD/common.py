@@ -73,3 +73,12 @@ def set_shopping_entry(tg_id, certificate_id, email):
         'certificate': certificate,
         'new_entry': new_entry
     }
+
+
+@sync_to_async()
+def get_shopping_entry(tg_id):
+    '''Запись в журнале покупок'''
+    client = mdl.Client.objects.filter(tg_id=tg_id).first()
+    shopping_entry = mdl.ShoppingJournal.objects.filter(client=client).first()
+
+    return shopping_entry

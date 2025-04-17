@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.db import models
 from PIL import Image
 from inwork.utils import START_WORK_TIME_DEFAULT, END_WORK_TIME_DEFAULT
+import uuid
 
 
 class Person(models.Model):
@@ -238,7 +239,9 @@ class Certificate(models.Model):
 class ShoppingJournal(models.Model):
     client = models.ForeignKey(
         Client, on_delete=models.CASCADE, verbose_name='Клиент')
-    certificate = models.ForeignKey(
+    cert_uid = models.UUIDField(
+        default=uuid.uuid4, editable=False, unique=True)
+    client_cert = models.ForeignKey(
         Certificate, on_delete=models.CASCADE, verbose_name='Сертификат')
     email = models.CharField(max_length=255, verbose_name='Email')
     date_time = models.DateTimeField(auto_now_add=True)

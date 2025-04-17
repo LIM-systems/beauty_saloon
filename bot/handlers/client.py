@@ -17,6 +17,8 @@ from bot.loader import bot, dp
 from bot.utils import keyboards as kb
 from bot.utils import utils
 from bot.utils.states import ClientData, ClientDataChange
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 
 
 async def message_rec(records):
@@ -262,23 +264,54 @@ async def confirm_record(call: types.CallbackQuery):
 
 @dp.message_handler(Text(ld.main_menu_buttons[4]))
 async def get_certificates_handler(msg: types.Message):
-    # await msg.answer('Скоро Вы сможете купить здесь сертификаты.')
     certificates = await sqlcom.get_certificates()
+    sorted_certificates = sorted(certificates, key=lambda c: c.price)
+
     message = 'Сертификаты на выбор:\n\n'
     keyboard = types.InlineKeyboardMarkup()
-    buttons = []
 
-    for i, certificate in enumerate(certificates):
-        index = i+1
+    # Кнопка "Правила" на первой строке
+    keyboard.add(types.InlineKeyboardButton(
+        'Правила', callback_data='certificate_button_rules'))
+
+    # Кнопки сертификатов на следующих строках
+    buttons = []
+    for i, certificate in enumerate(sorted_certificates):
+        index = i + 1
         message += f'{index}) {certificate.price}р - {certificate.name}\n'
         buttons.append(types.InlineKeyboardButton(
-            index, callback_data=f'certificate_button_{certificate.id}'))
-        if index == len(certificates) or index == 5:
+            str(index), callback_data=f'certificate_button_{certificate.id}'))
+
+        # Каждые 5 кнопок — новая строка
+        if index % 5 == 0 or index == len(sorted_certificates):
             keyboard.row(*buttons)
             buttons = []
-    message += '\nВыберите порядковый номер сертификата'
 
+    message += '''\nВыберите порядковый номер сертификата
+
+<i>*Перед покупкой сертификатов, пожалуйста, ознакомьтесь с правилами их использования!</i>'''
     await msg.answer(message, reply_markup=keyboard)
+
+
+# показать правила использования сертификатов
+@dp.callback_query_handler(lambda c: c.data == 'certificate_button_rules')
+async def read_rules(call: types.CallbackQuery):
+    await call.message.delete()
+    await call.message.answer('''Правила использования подарочного сертификата салона красоты «Ваниль»
+
+•Подарочные сертификаты  «Ваниль» предоставляют право выбора любой услуги или продукции в салоне.
+
+•Воспользоваться услугой, с использованием подарочного сертификата может как сам Приобретатель сертификата, так и иное лицо, которому Приобретатель подарочного сертификата передал подарочный сертификат. В момент передачи Приобретатель обязуется проинформировать Держателя подарочного сертификата о правилах его использования.
+
+•Срок действия подарочного сертификата 6 месяцев с момента приобретения.В случае если в течение срока действия подарочного сертификата Держатель подарочного сертификата не воспользуется услугой (услугами) салона, то задаток остается в распоряжении Продавца и возврату не подлежит.
+ 
+•Воспользоваться услугами салона по подарочному сертификату можно делать неоднократно до полного расходования его номинала.
+
+•В том случае если Держателем подарочного сертификата выбраны услуги на сумму превышающую номинал карты, Держатель подарочнооо сертификата  имеет право доплатить разницу в стоимости услуги наличными денежными средствами или с помощью банковской карты.
+
+•Подарочный сертификат  возврату и обмену на денежные средства не подлежит.
+
+• Подарочный сертификат необходимо показать администратору до начала оказания услуг.''')
 
 
 # выслать инвойс на покупку сертификата
@@ -369,11 +402,13 @@ async def successful_payment(msg: types.Message):
 Клиент: {client}
 Сертификат: {certificate.name}
 Цена: {certificate.price}
+ID: {shopping_entry.client_cert}
 <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/{new_entry.id}/change/">Запись в журнале покупок</a>
 '''
     await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
 
-    client_text = f'{certificate.name} приобретён!'
+    client_text = f'''{certificate.name} приобретён!
+ID: {shopping_entry.client_cert}'''
     if certificate.image and certificate.image.path:
         with open(certificate.image.path, 'rb') as photo:
             await msg.answer_photo(photo, caption=client_text)
@@ -381,21 +416,35 @@ async def successful_payment(msg: types.Message):
         await msg.answer(client_text)
 
 
-# @dp.message_handler(commands=['test'])
-# async def successful_payment(msg: types.Message):
-#     certificate = await sqlcom.get_certificate(4)
-#     client_text = f'{certificate.name} приобретён!'
-#     if certificate.image and certificate.image.path:
-#         with open(certificate.image.path, 'rb') as photo:
-#             await msg.answer_photo(photo, caption=client_text)
-#     else:
-#         await msg.answer(client_text)
+@dp.message_handler(commands=['test'])
+async def successful_payment(msg: types.Message):
+    certificate = await sqlcom.get_certificate(4)
+    shopping_entry = await sqlcom.get_shopping_entry(msg.from_user.id)
+    client_text = f'{certificate.name} приобретён!'
+    if certificate.image and certificate.image.path:
+        with open(certificate.image.path, 'rb') as img:
+            draw = ImageDraw.Draw(img)
 
-#     message = f'''🔔
-# Покупка сертификата:
-# Клиент: Василий
-# Сертификат: Тестовый
-# Цена: 100
-# <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
-# '''
-#     await bot.send_message(chat_id=msg.from_user.id, text=message)
+            # Настрой шрифт (путь к .ttf-шрифту и размер)
+            # путь к .ttf можно заменить на свой
+            font = ImageFont.truetype("arial.ttf", 40)
+
+            # Позиция текста (x, y), сам текст
+            draw.text((300, 500), client_text, font=font, fill="black")
+
+            # Сохраняем в память (вместо файла)
+            buffer = BytesIO()
+            img.save(buffer, format='PNG')
+            buffer.seek(0)
+    else:
+        await msg.answer(client_text)
+
+    message = f'''🔔
+Покупка сертификата:
+Клиент: Василий
+Сертификат: Тестовый
+Цена: 100
+ID: {shopping_entry.client_cert}
+<a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
+'''
+    await bot.send_message(chat_id=msg.from_user.id, text=message)
