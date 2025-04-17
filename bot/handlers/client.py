@@ -1,4 +1,5 @@
 import json
+import os
 import smtplib
 from datetime import datetime as dt
 from email.mime.multipart import MIMEMultipart
@@ -19,6 +20,8 @@ from bot.utils import utils
 from bot.utils.states import ClientData, ClientDataChange
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
+
+from saloon import settings
 
 
 async def message_rec(records):
@@ -357,35 +360,35 @@ async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
     await bot.answer_pre_checkout_query(pre_checkout_q.id, ok=True)
 
 
-async def send_mail(email, client, certificate):
-    sender_email = env.EMAIL_USER
-    receiver_email = email
-    subject = f'Покупка сертификата. {client.name}'
-    body = f'''Данные о покупке:
+# async def send_mail(email, client, certificate):
+#     sender_email = env.EMAIL_USER
+#     receiver_email = email
+#     subject = f'Покупка сертификата. {client.name}'
+#     body = f'''Данные о покупке:
 
-Клиент - {client.name}
-Сертификат - {certificate.name}
-Цена - {certificate.price}
-    '''
-    # Создание письма
-    message = MIMEMultipart()
-    message['From'] = sender_email
-    message['To'] = receiver_email
-    message['Subject'] = subject
+# Клиент - {client.name}
+# Сертификат - {certificate.name}
+# Цена - {certificate.price}
+#     '''
+#     # Создание письма
+#     message = MIMEMultipart()
+#     message['From'] = sender_email
+#     message['To'] = receiver_email
+#     message['Subject'] = subject
 
-    # Добавление текста в письмо
-    message.attach(MIMEText(body, 'plain'))
+#     # Добавление текста в письмо
+#     message.attach(MIMEText(body, 'plain'))
 
-    # Подключение к SMTP-серверу и отправка письма
-    try:
-        with smtplib.SMTP(env.EMAIL_SERVER, env.EMAIL_PORT) as server:
-            server.starttls()  # Начинаем защищенное соединение
-            # Входим в аккаунт
-            server.login(env.EMAIL_USER, env.EMAIL_PASSWORD)
-            text = message.as_string()
-            server.sendmail(sender_email, receiver_email, text)
-    except Exception as e:
-        print(f'Ошибка при отправке письма: {e}')
+#     # Подключение к SMTP-серверу и отправка письма
+#     try:
+#         with smtplib.SMTP(env.EMAIL_SERVER, env.EMAIL_PORT) as server:
+#             server.starttls()  # Начинаем защищенное соединение
+#             # Входим в аккаунт
+#             server.login(env.EMAIL_USER, env.EMAIL_PASSWORD)
+#             text = message.as_string()
+#             server.sendmail(sender_email, receiver_email, text)
+#     except Exception as e:
+#         print(f'Ошибка при отправке письма: {e}')
 
 
 # успешный платёж
@@ -427,7 +430,8 @@ async def successful_payment(msg: types.Message):
 
             # Настрой шрифт (путь к .ttf-шрифту и размер)
             # путь к .ttf можно заменить на свой
-            font = ImageFont.truetype("arial.ttf", 40)
+            font_path = os.path.join(settings.MEDIA_ROOT, 'fonts', 'arial.ttf')
+            font = ImageFont.truetype(font_path, 40)
 
             # Позиция текста (x, y), сам текст
             draw.text((300, 500), client_text, font=font, fill="black")
