@@ -66,7 +66,7 @@ def set_shopping_entry(tg_id, certificate_id, email):
     client = mdl.Client.objects.filter(tg_id=tg_id).first()
     certificate = mdl.Certificate.objects.filter(id=certificate_id).first()
     new_entry = mdl.ShoppingJournal.objects.create(
-        client=client, certificate=certificate, email=email)
+        client=client, client_cert=certificate, email=email)
 
     return {
         'client': client,
