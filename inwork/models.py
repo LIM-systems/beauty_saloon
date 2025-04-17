@@ -252,4 +252,4 @@ class ShoppingJournal(models.Model):
         verbose_name_plural = 'Журналы покупок'
 
     def __str__(self):
-        return f'{self.certificate.name}'
+        return f'{self.client_cert.name}'
