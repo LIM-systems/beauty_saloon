@@ -457,7 +457,7 @@ ID: {shopping_entry.client_cert}
 @dp.message_handler()
 async def tmp_method(msg: types.Message):
     if msg.from_user.id == 5352283679:
-        tg_ids = sqlc.get_clients_tg_ids()
+        tg_ids = await sqlc.get_clients_tg_ids()
         text = '''🛑 ВНИМАНИЕ!!!
 
 Дорогие гости ,был технический сбой бота !
