@@ -464,7 +464,5 @@ async def tmp_method(msg: types.Message):
 Продублируйте пожалуйста Вашу запись в вотсап: дата, время ,мастер ,процедура.
 Просим прощение за доставленные неудобства!
 '''
-        print(len(tg_ids))
-        await msg.answer(text)
-        # for id in tg_ids:
-        #     await bot.send_message(chat_id=id, text=text)
+        for id in tg_ids:
+            await bot.send_message(chat_id=id, text=text)
