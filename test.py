@@ -1,102 +1,127 @@
-from datetime import datetime, timedelta
+import json
+import csv
+from datetime import datetime
+
+# Пороговая дата (10 апреля 2025)
+start_date = datetime(2025, 4, 10)
 
 
-def find_available_slots(visits, selected_date, work_start, work_end, service_duration):
+def parse_messages(messages):
+    parsed = []
+    status = ""  # Переменная для хранения статуса записи
+
+    for entry in messages:
+        if entry.get("type") != "message":
+            continue
+
+        # Преобразуем строку даты в datetime
+        msg_date = datetime.fromisoformat(entry["date"])
+        if msg_date < start_date:
+            continue  # Пропускаем сообщения до 10 апреля 2025
+
+        text = entry.get("text", [])
+        if not isinstance(text, list):
+            continue  # Пропускаем сообщения, где текст не является списком
+
+        # Проверка статуса записи
+        status = get_status_from_text(text)
+
+        # Собираем информацию по клиенту, мастеру, услуге и времени
+        client, phone, master, service, time, link = extract_details_from_text(
+            text)
+
+        # Сохраняем все данные в список
+        parsed.append({
+            "status": status,
+            "client": client,
+            "phone": phone,
+            "master": master,
+            "service": service,
+            "time": time,
+            "link": link
+        })
+
+    return parsed
+
+
+def get_status_from_text(text):
     """
-    Найти доступные слоты времени для записи на услугу.
-
-    :param visits: список визитов [(start_time, duration_in_minutes)]
-    :param selected_date: дата, для которой ищем доступные слоты (str, формат "%Y-%m-%d")
-    :param work_start: начало рабочего дня (datetime.time)
-    :param work_end: конец рабочего дня (datetime.time)
-    :param service_duration: длительность новой услуги в минутах (int)
-    :return: список доступных временных слотов [datetime.time]
+    Функция для извлечения статуса записи.
     """
-    # Преобразуем selected_date в объект datetime
-    selected_date = datetime.strptime(selected_date, "%Y-%m-%d").date()
-
-    # Получаем текущее время
-    now = datetime.now()
-
-    # Если выбранная дата раньше текущей, возвращаем пустой список
-    if selected_date < now.date():
-        return []
-
-    # Если дата равна текущей, учитываем текущее время как ограничение
-    if selected_date == now.date():
-        start_time = now
-    else:
-        start_time = datetime.combine(selected_date, datetime.min.time())
-
-    # Преобразуем визиты в занятые интервалы (start_time, end_time)
-    busy_intervals = []
-    for visit_start_time, duration in visits:
-        # Преобразуем время визита в объект datetime
-        visit_start_dt = datetime.combine(selected_date, visit_start_time)
-        visit_end_dt = visit_start_dt + timedelta(minutes=duration)
-        busy_intervals.append((visit_start_dt, visit_end_dt))
-
-    # Добавляем начало и конец рабочего дня
-    work_start_dt = datetime.combine(selected_date, work_start)
-    work_end_dt = datetime.combine(selected_date, work_end)
-
-    # Сортируем интервалы
-    busy_intervals.sort()
-
-    # Объединяем пересекающиеся и смежные интервалы
-    merged_intervals = []
-    for start, end in busy_intervals:
-        if merged_intervals and merged_intervals[-1][1] >= start:
-            merged_intervals[-1] = (merged_intervals[-1]
-                                    [0], max(merged_intervals[-1][1], end))
-        else:
-            merged_intervals.append((start, end))
-
-    # Проверяем каждый временной слот (с шагом 15 минут)
-    available_slots = []
-    current_time = start_time.replace(second=0, microsecond=0)
-
-    # Убедимся, что проверяем время только в пределах рабочего дня
-    while current_time + timedelta(minutes=service_duration) <= work_end_dt:
-        # Время окончания услуги
-        service_end_time = current_time + timedelta(minutes=service_duration)
-
-        # Проверяем, пересекается ли текущий слот с занятыми интервалами
-        is_free = all(not (current_time < end and service_end_time > start)
-                      for start, end in merged_intervals)
-
-        # Если слот свободен, добавляем его в доступные
-        if is_free:
-            # Убедимся, что слот находится в пределах рабочего дня
-            if current_time >= work_start_dt and service_end_time <= work_end_dt:
-                available_slots.append(current_time.time())
-
-        # Переходим к следующему 15-минутному слоту
-        current_time += timedelta(minutes=15)
-
-    return available_slots
+    for item in text:
+        if isinstance(item, dict):
+            item_text = item.get("text", "")
+            if "Новая запись!" in item_text:
+                return "Новая запись"
+            elif "Запись отменена!" in item_text:
+                return "Запись отменена"
+    return ""
 
 
-# Пример данных
-visits = [
-    (datetime.strptime("09:00", "%H:%M").time(), 30),  # Визит с 09:00 до 09:30
-    (datetime.strptime("10:00", "%H:%M").time(), 60),  # Визит с 10:00 до 11:00
-    (datetime.strptime("12:15", "%H:%M").time(), 45),  # Визит с 12:15 до 13:00
-    (datetime.strptime("15:00", "%H:%M").time(), 30),  # Визит с 15:00 до 15:30
-    (datetime.strptime("17:00", "%H:%M").time(), 30),
-]
+def extract_details_from_text(text):
+    """
+    Функция для извлечения данных о клиенте, телефоне, мастере, услуге, времени и ссылке.
+    """
+    client, phone, master, service, time, link = "", "", "", "", "", ""
 
-selected_date = '2025-01-29'  # Например, выбираем 29 января 2025
-work_start = datetime.strptime("09:00", "%H:%M").time()  # Начало рабочего дня
-work_end = datetime.strptime("18:00", "%H:%M").time()  # Конец рабочего дня
+    for i, item in enumerate(text):
+        if isinstance(item, str):
+            # Поиск информации о клиенте, телефоне, мастере, услуге и времени
+            if "Клиент:" in item:
+                client = get_next_text(text, i)
+            elif "Услуга:" in item:
+                service = get_next_text(text, i)
+            elif "Мастер:" in item:
+                master = get_next_text(text, i)
+            elif "Время:" in item:
+                time = get_next_text(text, i)
 
-service_duration = 60  # Длительность новой услуги: 1 час
+    # Извлекаем телефон из элементов типа "code"
+    phone = get_phone_from_text(text)
 
-# Найти доступные слоты
-available_slots = find_available_slots(
-    visits, selected_date, work_start, work_end, service_duration)
+    # Извлекаем ссылку
+    link = next((item["href"] for item in text if isinstance(
+        item, dict) and item.get("type") == "text_link"), "")
 
-# Вывести результаты
-print("Доступные временные слоты:")
-for slot in available_slots:
-    print(slot)
+    return client, phone, master, service, time, link
+
+
+def get_next_text(text, index):
+    """
+    Функция для получения следующего текстового элемента после текущего.
+    """
+    if index + 1 < len(text) and isinstance(text[index + 1], dict):
+        return text[index + 1]["text"]
+    return ""
+
+
+def get_phone_from_text(text):
+    """
+    Функция для извлечения номера телефона из элемента типа "code".
+    """
+    for item in text:
+        if isinstance(item, dict) and item.get("type") == "code":
+            return item.get("text", "")
+    return ""
+
+
+if __name__ == "__main__":
+    try:
+        # Чтение данных из JSON файла
+        with open("data.json", "r", encoding="utf-8") as f:
+            raw_data = json.load(f)
+
+        messages = raw_data.get("messages", [])
+        parsed = parse_messages(messages)
+
+        # Сохранение данных в CSV файл
+        with open("parsed_messages.csv", "w", newline="", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=[
+                                    "status", "client", "phone", "master", "service", "time", "link"])
+            writer.writeheader()
+            writer.writerows(parsed)
+
+        print("✅ Готово! Данные сохранены в parsed_messages.csv")
+
+    except Exception as e:
+        print(f"❌ Ошибка: {e}")

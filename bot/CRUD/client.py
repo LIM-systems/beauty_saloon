@@ -110,3 +110,15 @@ def get_client_record_with_bad_estimate(tg_id):
         estimation__lte=3).order_by('-date').first()
     if visit:
         return visit.id
+
+
+@sync_to_async()
+def get_clients_tg_ids():
+    clients = mdl.Client.objects.all()
+
+    tg_ids = []
+    for client in clients:
+        if client.tg_id:
+            tg_ids.append(client.tg_id)
+
+    return tg_ids
