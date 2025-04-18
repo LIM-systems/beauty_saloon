@@ -1,5 +1,6 @@
 import json
 import os
+from shutil import ExecError
 import smtplib
 from datetime import datetime as dt
 from email.mime.multipart import MIMEMultipart
@@ -465,4 +466,7 @@ async def tmp_method(msg: types.Message):
 Просим прощение за доставленные неудобства!
 '''
         for id in tg_ids:
-            await bot.send_message(chat_id=id, text=text)
+            try:
+                await bot.send_message(chat_id=id, text=text)
+            except Exception as e:
+                print(e)
