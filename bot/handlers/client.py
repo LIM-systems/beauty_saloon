@@ -453,20 +453,3 @@ ID: {shopping_entry.client_cert}
 <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
 '''
     await bot.send_message(chat_id=msg.from_user.id, text=message)
-
-
-@dp.message_handler()
-async def tmp_method(msg: types.Message):
-    if msg.from_user.id == 5352283679:
-        tg_ids = await sqlc.get_clients_tg_ids()
-        text = '''🛑 ВНИМАНИЕ!!!
-
-Дорогие гости ,был технический сбой бота !
-Продублируйте пожалуйста Вашу запись в вотсап: дата, время ,мастер ,процедура.
-Просим прощение за доставленные неудобства!
-'''
-        for id in tg_ids:
-            try:
-                await bot.send_message(chat_id=id, text=text)
-            except Exception as e:
-                print(e)
