@@ -4,6 +4,8 @@ from asgiref.sync import sync_to_async
 from django.db.models import Avg
 from django.utils.timezone import now, timedelta
 from inwork import models as mdl
+from pathlib import Path
+from django.core.files import File
 
 DELTA_VISITS = 110
 
@@ -49,14 +51,41 @@ def select_open_recors():
 @sync_to_async()
 def get_certificates():
     '''Получить сертификаты'''
-    certificates = mdl.Certificate.objects.all()
+    certificates = mdl.Certificate.objects.order_by('id')[:4]
     return [certificate for certificate in certificates]
 
 
 @sync_to_async()
 def get_certificate(id):
-    '''Получить сертификаты'''
+    '''Получить сертификат'''
     certificate = mdl.Certificate.objects.filter(id=id).first()
+    return certificate
+
+
+@sync_to_async()
+def set_certificate(price: int):
+    # путь к файлу изображения
+    image_path = Path('media/certificates/default.jpg')
+    name = f"Подарочный сертификат на {price} рублей"
+    description = name
+
+    if not image_path.exists():
+        raise FileNotFoundError(f"Файл {image_path} не найден")
+
+    # Пытаемся найти сертификат по цене
+    certificate, created = mdl.Certificate.objects.get_or_create(
+        price=price,
+        defaults={
+            "name": name,
+            "description": description,
+        }
+    )
+
+    # Если создан новый — добавляем изображение
+    if created:
+        with image_path.open('rb') as f:
+            certificate.image.save(image_path.name, File(f), save=True)
+
     return certificate
 
 

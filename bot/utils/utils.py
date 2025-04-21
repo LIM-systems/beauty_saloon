@@ -1,3 +1,4 @@
+import json
 from re import sub
 from datetime import datetime
 from aiogram import types
@@ -60,3 +61,36 @@ async def alert_master_msg(visit_id, text):
 Услуга: <b>{visit[3]}</b>
 Время: <b>{visit[1].strftime('%Y-%m-%d %H:%M')}</b>
 ''')
+
+
+async def create_invoice(certificate, bot, user_tg_id):
+    '''Создать инвойс'''
+    price = types.LabeledPrice(
+        label=certificate.name, amount=certificate.price * 100)
+    provider_data = json.dumps({
+        'receipt': {
+            'items': [{
+                'description': f'{certificate.name}',
+                'quantity': '1.00',
+                'amount': {
+                    'value': f'{certificate.price}.00',
+                    'currency': 'RUB'
+                },
+                'vat_code': 1,
+                "payment_mode": "full_payment",
+                "payment_subject": "commodity"
+            }]
+        }
+    })
+    await bot.send_invoice(user_tg_id,
+                           title=f'Покупка {certificate.name}',
+                           description=f'{certificate.description}',
+                           start_parameter='start_parameter',
+                           provider_token=env.PAYMENT_TOKEN,
+                           prices=[price],
+                           currency='RUB',
+                           need_email=True,
+                           send_email_to_provider=True,
+                           payload=f'{certificate.id}',
+                           provider_data=provider_data
+                           )

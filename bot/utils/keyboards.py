@@ -1,6 +1,4 @@
 from aiogram import types
-
-import bot.loader as ld
 import env
 
 import logging
@@ -154,3 +152,34 @@ def inline_btns_with_id_donttext(
             markup.add(types.InlineKeyboardButton(
                 '◀◀ Назад', callback_data=f'{call}/◀◀ Назад'))
     return markup
+
+
+async def get_cert_menu(msg, certificates):
+    '''Отображение меню сертификатов'''
+    message = 'Сертификаты на выбор:\n\n'
+    keyboard = types.InlineKeyboardMarkup()
+
+    # Кнопка "Правила" на первой строке
+    keyboard.row(types.InlineKeyboardButton(
+        'Правила', callback_data='certificate_button_rules'),
+        types.InlineKeyboardButton(
+        'Указать номинал', callback_data='own_cert_sum_button'))
+
+    # Кнопки сертификатов на следующих строках
+    buttons = []
+    for i, certificate in enumerate(certificates):
+        index = i + 1
+        message += f'{index}) {certificate.name}\n'
+        buttons.append(types.InlineKeyboardButton(
+            str(index), callback_data=f'certificate_button_{certificate.id}'))
+
+        # Каждые 5 кнопок — новая строка
+        if index % 5 == 0 or index == len(certificates):
+            keyboard.row(*buttons)
+            buttons = []
+
+    message += '''\nВыберите порядковый номер сертификата
+или укажите свою сумму номиналом не менее 5000 рублей
+
+<i>*Перед покупкой сертификатов, пожалуйста, ознакомьтесь с правилами их использования!</i>'''
+    await msg.answer(message, reply_markup=keyboard)

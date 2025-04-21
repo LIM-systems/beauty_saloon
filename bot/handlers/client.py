@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from shutil import ExecError
@@ -271,30 +272,7 @@ async def get_certificates_handler(msg: types.Message):
     certificates = await sqlcom.get_certificates()
     sorted_certificates = sorted(certificates, key=lambda c: c.price)
 
-    message = 'Сертификаты на выбор:\n\n'
-    keyboard = types.InlineKeyboardMarkup()
-
-    # Кнопка "Правила" на первой строке
-    keyboard.add(types.InlineKeyboardButton(
-        'Правила', callback_data='certificate_button_rules'))
-
-    # Кнопки сертификатов на следующих строках
-    buttons = []
-    for i, certificate in enumerate(sorted_certificates):
-        index = i + 1
-        message += f'{index}) {certificate.price}р - {certificate.name}\n'
-        buttons.append(types.InlineKeyboardButton(
-            str(index), callback_data=f'certificate_button_{certificate.id}'))
-
-        # Каждые 5 кнопок — новая строка
-        if index % 5 == 0 or index == len(sorted_certificates):
-            keyboard.row(*buttons)
-            buttons = []
-
-    message += '''\nВыберите порядковый номер сертификата
-
-<i>*Перед покупкой сертификатов, пожалуйста, ознакомьтесь с правилами их использования!</i>'''
-    await msg.answer(message, reply_markup=keyboard)
+    await kb.get_cert_menu(msg, sorted_certificates)
 
 
 # показать правила использования сертификатов
@@ -318,78 +296,45 @@ async def read_rules(call: types.CallbackQuery):
 • Подарочный сертификат необходимо показать администратору до начала оказания услуг.''')
 
 
+# указать свой номинал сертификата
+@dp.callback_query_handler(lambda call: call.data == 'own_cert_sum_button')
+async def get_own_sum(call: types.CallbackQuery):
+    await call.message.delete()
+    await call.message.answer('Напишите желаемую сумму числами ответным сообщением')
+    await ClientData.cert_price.set()
+
+
+@dp.message_handler(state=ClientData.cert_price)
+async def get_own_sum(msg: types.Message, state: FSMContext):
+    text = msg.text.replace(' ', '')
+    if not text.isdigit() or int(text.replace(' ', '')) < 5000:
+        await state.finish()
+        await msg.answer('Требуется указать число не менее 5000')
+        await asyncio.sleep(1)
+        certificates = await sqlcom.get_certificates()
+        sorted_certificates = sorted(certificates, key=lambda c: c.price)
+
+        await kb.get_cert_menu(msg, sorted_certificates)
+        return
+
+    certificate = await sqlcom.set_certificate(int(text))
+    await utils.create_invoice(certificate, bot, msg.from_user.id)
+    await state.finish()
+
+
 # выслать инвойс на покупку сертификата
 @dp.callback_query_handler(lambda c: c.data.startswith('certificate_button'))
 async def select_certificate(call: types.CallbackQuery):
     id = call.data.split('_')[2]
     certificate = await sqlcom.get_certificate(id)
     await call.message.delete()
-    price = types.LabeledPrice(
-        label=certificate.name, amount=certificate.price * 100)
-    provider_data = json.dumps({
-        'receipt': {
-            'items': [{
-                'description': f'{certificate.name}',
-                'quantity': '1.00',
-                'amount': {
-                    'value': f'{certificate.price}.00',
-                    'currency': 'RUB'
-                },
-                'vat_code': 1,
-                "payment_mode": "full_payment",
-                "payment_subject": "commodity"
-            }]
-        }
-    })
-    await bot.send_invoice(call.from_user.id,
-                           title=f'Покупка {certificate.name}',
-                           description=f'{certificate.description}',
-                           start_parameter='start_parameter',
-                           provider_token=env.PAYMENT_TOKEN,
-                           prices=[price],
-                           currency='RUB',
-                           need_email=True,
-                           send_email_to_provider=True,
-                           payload=f'{certificate.id}',
-                           provider_data=provider_data
-                           )
+    await utils.create_invoice(certificate, bot, call.from_user.id)
 
 
 # обработка оплаты
 @dp.pre_checkout_query_handler()
 async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
     await bot.answer_pre_checkout_query(pre_checkout_q.id, ok=True)
-
-
-# async def send_mail(email, client, certificate):
-#     sender_email = env.EMAIL_USER
-#     receiver_email = email
-#     subject = f'Покупка сертификата. {client.name}'
-#     body = f'''Данные о покупке:
-
-# Клиент - {client.name}
-# Сертификат - {certificate.name}
-# Цена - {certificate.price}
-#     '''
-#     # Создание письма
-#     message = MIMEMultipart()
-#     message['From'] = sender_email
-#     message['To'] = receiver_email
-#     message['Subject'] = subject
-
-#     # Добавление текста в письмо
-#     message.attach(MIMEText(body, 'plain'))
-
-#     # Подключение к SMTP-серверу и отправка письма
-#     try:
-#         with smtplib.SMTP(env.EMAIL_SERVER, env.EMAIL_PORT) as server:
-#             server.starttls()  # Начинаем защищенное соединение
-#             # Входим в аккаунт
-#             server.login(env.EMAIL_USER, env.EMAIL_PASSWORD)
-#             text = message.as_string()
-#             server.sendmail(sender_email, receiver_email, text)
-#     except Exception as e:
-#         print(f'Ошибка при отправке письма: {e}')
 
 
 # успешный платёж

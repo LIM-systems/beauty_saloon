@@ -245,6 +245,8 @@ class ShoppingJournal(models.Model):
         Certificate, on_delete=models.CASCADE, verbose_name='Сертификат')
     email = models.CharField(max_length=255, verbose_name='Email')
     date_time = models.DateTimeField(auto_now_add=True)
+    sum = models.IntegerField(verbose_name='Сумма')
+    was_used = models.BooleanField(default=False, verbose_name='Использован?')
 
     class Meta:
         verbose_name = 'Журнал покупок'

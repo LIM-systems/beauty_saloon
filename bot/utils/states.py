@@ -5,6 +5,7 @@ class ClientData(StatesGroup):
     name = State()
     phone = State()
     comment = State()
+    cert_price = State()
 
 
 class ClientDataChange(StatesGroup):
