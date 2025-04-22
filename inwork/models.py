@@ -223,10 +223,11 @@ class Certificate(models.Model):
     )
     price = models.IntegerField(
         verbose_name='Цена',
-        help_text='Введите цену сертификата в рублях'
+        help_text='Введите цену сертификата в рублях',
+        unique=True
     )
     image = models.ImageField(upload_to='certificates/', verbose_name='Изображение сертификата',
-                              null=True, blank=True)
+                              default='certificates/default.jpg')
 
     class Meta:
         verbose_name = 'Сертификат'

@@ -3,6 +3,7 @@ import math
 from asgiref.sync import sync_to_async
 from django.db.models import Avg
 from django.utils.timezone import now, timedelta
+from bot.utils.certs import create_cert_img
 from inwork import models as mdl
 from pathlib import Path
 from django.core.files import File
@@ -65,12 +66,8 @@ def get_certificate(id):
 @sync_to_async()
 def set_certificate(price: int):
     # путь к файлу изображения
-    image_path = Path('media/certificates/default.jpg')
     name = f"Подарочный сертификат на {price} рублей"
     description = name
-
-    if not image_path.exists():
-        raise FileNotFoundError(f"Файл {image_path} не найден")
 
     # Пытаемся найти сертификат по цене
     certificate, created = mdl.Certificate.objects.get_or_create(
@@ -80,11 +77,6 @@ def set_certificate(price: int):
             "description": description,
         }
     )
-
-    # Если создан новый — добавляем изображение
-    if created:
-        with image_path.open('rb') as f:
-            certificate.image.save(image_path.name, File(f), save=True)
 
     return certificate
 
@@ -109,5 +101,6 @@ def get_shopping_entry(tg_id):
     '''Запись в журнале покупок'''
     client = mdl.Client.objects.filter(tg_id=tg_id).first()
     shopping_entry = mdl.ShoppingJournal.objects.filter(client=client).first()
+    img_buffer = create_cert_img(shopping_entry, shopping_entry.client_cert)
 
-    return shopping_entry
+    return shopping_entry, img_buffer

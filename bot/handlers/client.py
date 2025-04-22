@@ -367,34 +367,17 @@ ID: {shopping_entry.client_cert}'''
 
 @dp.message_handler(commands=['test'])
 async def successful_payment(msg: types.Message):
-    certificate = await sqlcom.get_certificate(4)
-    shopping_entry = await sqlcom.get_shopping_entry(msg.from_user.id)
+    certificate = await sqlcom.get_certificate(13)
+    _, img_buffer = await sqlcom.get_shopping_entry(msg.from_user.id)
     client_text = f'{certificate.name} приобретён!'
-    if certificate.image and certificate.image.path:
-        with open(certificate.image.path, 'rb') as img:
-            draw = ImageDraw.Draw(img)
+    await msg.answer_photo(photo=img_buffer, caption=client_text)
 
-            # Настрой шрифт (путь к .ttf-шрифту и размер)
-            # путь к .ttf можно заменить на свой
-            font_path = os.path.join(settings.MEDIA_ROOT, 'fonts', 'arial.ttf')
-            font = ImageFont.truetype(font_path, 40)
-
-            # Позиция текста (x, y), сам текст
-            draw.text((300, 500), client_text, font=font, fill="black")
-
-            # Сохраняем в память (вместо файла)
-            buffer = BytesIO()
-            img.save(buffer, format='PNG')
-            buffer.seek(0)
-    else:
-        await msg.answer(client_text)
-
-    message = f'''🔔
-Покупка сертификата:
-Клиент: Василий
-Сертификат: Тестовый
-Цена: 100
-ID: {shopping_entry.client_cert}
-<a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
-'''
-    await bot.send_message(chat_id=msg.from_user.id, text=message)
+#     message = f'''🔔
+# Покупка сертификата:
+# Клиент: Василий
+# Сертификат: Тестовый
+# Цена: 100
+# ID: {shopping_entry.client_cert}
+# <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/1/change/">Запись в журнале покупок</a>
+# '''
+#     await bot.send_photo(chat_id=msg.from_user.id, photo=img_buffer, caption=message)

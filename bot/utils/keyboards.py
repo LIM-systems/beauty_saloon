@@ -1,6 +1,6 @@
 from aiogram import types
 import env
-
+import bot.loader as ld
 import logging
 
 logger = logging.getLogger('main')
