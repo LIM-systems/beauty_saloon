@@ -227,7 +227,7 @@ class Certificate(models.Model):
         unique=True
     )
     image = models.ImageField(upload_to='certificates/', verbose_name='Изображение сертификата',
-                              default='certificates/default.jpg')
+                              default='certificates/default.png')
 
     class Meta:
         verbose_name = 'Сертификат'

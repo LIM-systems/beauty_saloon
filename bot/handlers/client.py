@@ -346,6 +346,7 @@ async def successful_payment(msg: types.Message):
     client = shopping_entry.get('client')
     certificate = shopping_entry.get('certificate')
     new_entry = shopping_entry.get('new_entry')
+    img_buffer = shopping_entry.get('img_buffer')
     message = f'''🔔
 Покупка сертификата:
 Клиент: {client}
@@ -356,20 +357,15 @@ ID: {shopping_entry.client_cert}
 '''
     await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
 
-    client_text = f'''{certificate.name} приобретён!
-ID: {shopping_entry.client_cert}'''
-    if certificate.image and certificate.image.path:
-        with open(certificate.image.path, 'rb') as photo:
-            await msg.answer_photo(photo, caption=client_text)
-    else:
-        await msg.answer(client_text)
+    client_text = f'{certificate.name} приобретён!\n\nID: {shopping_entry.cert_uid}'
+    await msg.answer_photo(photo=img_buffer, caption=client_text)
 
 
 @dp.message_handler(commands=['test'])
 async def successful_payment(msg: types.Message):
-    certificate = await sqlcom.get_certificate(13)
-    _, img_buffer = await sqlcom.get_shopping_entry(msg.from_user.id)
-    client_text = f'{certificate.name} приобретён!'
+    certificate = await sqlcom.get_certificate(14)
+    shopping_entry, img_buffer = await sqlcom.get_shopping_entry(msg.from_user.id)
+    client_text = f'{certificate.name} приобретён!\n\nID: {shopping_entry.cert_uid}'
     await msg.answer_photo(photo=img_buffer, caption=client_text)
 
 #     message = f'''🔔
