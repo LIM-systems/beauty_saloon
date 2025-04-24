@@ -353,7 +353,7 @@ async def successful_payment(msg: types.Message):
 Телефон: {client.phone}
 Сертификат: {certificate.name}
 Цена: {certificate.price}
-ID: {shopping_entry.client_cert}
+ID: {shopping_entry.cert_uid}
 <a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/{shopping_entry.id}/change/">Запись в журнале покупок</a>
 '''
     await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
