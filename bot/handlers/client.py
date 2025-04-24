@@ -342,18 +342,19 @@ async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
 async def successful_payment(msg: types.Message):
     id = msg.successful_payment.invoice_payload
     email = msg.successful_payment.order_info.email
-    shopping_entry = await sqlcom.set_shopping_entry(msg.from_user.id, id, email)
-    client = shopping_entry.get('client')
-    certificate = shopping_entry.get('certificate')
-    new_entry = shopping_entry.get('new_entry')
-    img_buffer = shopping_entry.get('img_buffer')
+    new_entry = await sqlcom.set_shopping_entry(msg.from_user.id, id, email)
+    shopping_entry = new_entry.get('new_entry')
+    client = new_entry.get('client')
+    certificate = new_entry.get('certificate')
+    img_buffer = new_entry.get('img_buffer')
     message = f'''🔔
 Покупка сертификата:
-Клиент: {client}
+Клиент: {client.name}
+Телефон: {client.phone}
 Сертификат: {certificate.name}
 Цена: {certificate.price}
 ID: {shopping_entry.client_cert}
-<a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/{new_entry.id}/change/">Запись в журнале покупок</a>
+<a href="https://devsaloon.tw1.su/admin/inwork/shoppingjournal/{shopping_entry.id}/change/">Запись в журнале покупок</a>
 '''
     await bot.send_message(chat_id=env.CHAT_ADMINS, text=message)
 

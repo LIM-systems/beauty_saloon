@@ -181,6 +181,7 @@ class APICreateRecords(APIView):
 
                     # отправка уведомления в чат админов
                     text = f'📝<b>Новая запись!</b>\nКлиент: <b>{client.name}</b>\n'
+                    text += f'Телефон: <b>{client.phone}</b>\n'
                     text += f'\n\n🟢<b>Мастер: {master.name.name}</b>'
                     text += f'''
 Услуга: <b>{service.name}</b>
@@ -196,6 +197,7 @@ class APICreateRecords(APIView):
 
                     # отправка уведомления в чат мастера
                     text = f'📝<b>Новая запись!</b>\nКлиент: <b>{client.name}</b>\n'
+                    text += f'Телефон: <b>{client.phone}</b>\n'
                     text += f'''
 Услуга: <b>{service.name}</b>
 Время: <b>{order_datetime}</b>
