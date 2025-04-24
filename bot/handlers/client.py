@@ -362,7 +362,7 @@ ID: {shopping_entry.client_cert}
 
 
 @dp.message_handler(commands=['test'])
-async def successful_payment(msg: types.Message):
+async def test(msg: types.Message):
     certificate = await sqlcom.get_certificate(14)
     shopping_entry, img_buffer = await sqlcom.get_shopping_entry(msg.from_user.id)
     client_text = f'{certificate.name} приобретён!\n\nID: {shopping_entry.cert_uid}'

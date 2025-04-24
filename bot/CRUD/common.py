@@ -87,7 +87,7 @@ def set_shopping_entry(tg_id, certificate_id, email):
     client = mdl.Client.objects.filter(tg_id=tg_id).first()
     certificate = mdl.Certificate.objects.filter(id=certificate_id).first()
     new_entry = mdl.ShoppingJournal.objects.create(
-        client=client, client_cert=certificate, email=email)
+        client=client, client_cert=certificate, email=email, sum=certificate.price)
     img_buffer = create_cert_img(new_entry, new_entry.client_cert)
 
     return {
