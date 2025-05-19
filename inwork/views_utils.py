@@ -148,8 +148,8 @@ def find_available_time_for_all_days(master_id, service_id, selected_date=dt.now
         existing_visits = md.VisitJournal.objects.filter(
             visit_master=master,
             date__range=(start_of_day, end_of_day)
-            cancel=False
-            finish=False).order_by('date').all()
+            cancel=False,
+            finish=False,).order_by('date').all()
 
         visits = [(visit.date.time(), visit.visit_service.duration,
                    visit.math_action, visit.math_value)
