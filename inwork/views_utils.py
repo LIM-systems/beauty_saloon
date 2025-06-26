@@ -54,8 +54,8 @@ def get_free_times(**kwargs):
     service_duration = kwargs.get('service_duration')
 
     # Получаем текущее время
-    # now = dt.now()
-    now = dt(2025, 6, 26, 10, 45)
+    now = dt.now()
+    # now = dt(2025, 6, 26, 10, 45)
 
     # Если выбранная дата раньше текущей, возвращаем пустой список
     if selected_date < now.date():
