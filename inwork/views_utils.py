@@ -54,8 +54,8 @@ def get_free_times(**kwargs):
     service_duration = kwargs.get('service_duration')
 
     # Получаем текущее время
-    now = dt.now()
-    # now = dt(2025, 2, 13, 10, 0)
+    # now = dt.now()
+    now = dt(2025, 6, 26, 10, 45)
 
     # Если выбранная дата раньше текущей, возвращаем пустой список
     if selected_date < now.date():
@@ -64,10 +64,12 @@ def get_free_times(**kwargs):
     # Если дата равна текущей, учитываем текущее время как ограничение
     if selected_date == now.date():
         start_time_combine = dt.combine(selected_date, work_start)
-        start_time = edit_start_time(now, start_time_combine)
+        if now > start_time_combine:
+            start_time = edit_start_time(now, start_time_combine)
+        else:
+            start_time = start_time_combine
     else:
         start_time = dt.combine(selected_date, dt.min.time())
-
     # Преобразуем визиты в занятые интервалы (start_time, end_time)
     busy_intervals = []
     for visit_start_time, duration, math_action, math_value in visits:
@@ -154,7 +156,6 @@ def find_available_time_for_all_days(master_id, service_id, selected_date=dt.now
         visits = [(visit.date.time(), visit.visit_service.duration,
                    visit.math_action, visit.math_value)
                   for visit in existing_visits]
-
         free_times = get_free_times(visits=visits,
                                     selected_date=day.date,
                                     work_start=day.start_time,
